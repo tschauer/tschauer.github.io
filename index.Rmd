@@ -1,5 +1,5 @@
 ---
-title: "Applied Statistics in Biology"
+title: "Applied Statistical Methods in Biology"
 author: by tschauer
 date: 27.09.2019
 ---
@@ -7,24 +7,20 @@ date: 27.09.2019
 
 ---
 
-
-```{css, echo=FALSE}
-a {
-  font-size: 20px;
-}
-```
-
-
 ## Preface
 
-The goal of this page is to collect statistical methods for experimental biology. From basics to sligthly advanced topics. 
+The goal of this page is to collect statistical methods for experimental biology. From basics to intermediate level. 
 
+---
 
 ## Introduction
 
 - [Summary Statistics](rmd_SumStats.html)
 
+---
 
 ## Hypothesis Testing
 
 - [ANOVA](rmd_Anova.html)
+
+---
