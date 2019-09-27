@@ -1,7 +1,7 @@
 name: "stats"
 output_dir: "."
 navbar:
-  title: "Applied Statistics in Life Sciences"
+  title: "Blog"
   left:
     - text: "Home"
       href: index.html
