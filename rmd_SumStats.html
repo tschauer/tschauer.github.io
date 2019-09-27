@@ -9,10 +9,9 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="by tschauer" />
 
 
-<title>Applied Statistics in Biology</title>
+<title>Summary Statistics</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -299,34 +298,44 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Applied Statistics in Biology</h1>
-<h4 class="author">by tschauer</h4>
-<h4 class="date">27.09.2019</h4>
+<h1 class="title toc-ignore">Summary Statistics</h1>
 
 </div>
 
-
-<hr />
-<style type="text/css">
-a {
-  font-size: 20px;
-}
-</style>
-<div id="preface" class="section level2">
-<h2>Preface</h2>
-<p>The goal of this page is to collect statistical methods for experimental biology. From basics to sligthly advanced topics.</p>
-</div>
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
+<div id="TOC">
 <ul>
-<li><a href="rmd_SumStats.html">Summary Statistics</a></li>
+<li><a href="#location">Location</a><ul>
+<li><a href="#mean">Mean</a></li>
+<li><a href="#median">Median</a></li>
+</ul></li>
+<li><a href="#spread">Spread</a><ul>
+<li><a href="#standard-deviation">Standard Deviation</a></li>
+</ul></li>
 </ul>
 </div>
-<div id="hypothesis-testing" class="section level2">
-<h2>Hypothesis Testing</h2>
-<ul>
-<li><a href="rmd_Anova.html">ANOVA</a></li>
-</ul>
+
+<div id="location" class="section level1">
+<h1>Location</h1>
+<div id="mean" class="section level3">
+<h3>Mean</h3>
+<pre class="r"><code>x &lt;- rnorm(1000)
+
+mean(x)</code></pre>
+<pre><code>## [1] -0.009160376</code></pre>
+</div>
+<div id="median" class="section level3">
+<h3>Median</h3>
+<pre class="r"><code>median(x)</code></pre>
+<pre><code>## [1] -0.008190755</code></pre>
+</div>
+</div>
+<div id="spread" class="section level1">
+<h1>Spread</h1>
+<div id="standard-deviation" class="section level3">
+<h3>Standard Deviation</h3>
+<pre class="r"><code>sd(x)</code></pre>
+<pre><code>## [1] 0.9923517</code></pre>
+</div>
 </div>
 
 

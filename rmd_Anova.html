@@ -9,10 +9,9 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="by tschauer" />
 
 
-<title>Applied Statistics in Biology</title>
+<title>ANOVA</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -299,34 +298,58 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Applied Statistics in Biology</h1>
-<h4 class="author">by tschauer</h4>
-<h4 class="date">27.09.2019</h4>
+<h1 class="title toc-ignore">ANOVA</h1>
 
 </div>
 
-
-<hr />
-<style type="text/css">
-a {
-  font-size: 20px;
-}
-</style>
-<div id="preface" class="section level2">
-<h2>Preface</h2>
-<p>The goal of this page is to collect statistical methods for experimental biology. From basics to sligthly advanced topics.</p>
-</div>
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
+<div id="TOC">
 <ul>
-<li><a href="rmd_SumStats.html">Summary Statistics</a></li>
+<li><a href="#multi-group-comparisons">Multi-group Comparisons</a><ul>
+<li><a href="#anova">Anova</a></li>
+<li><a href="#posthoc-test">PostHoc Test</a></li>
+</ul></li>
 </ul>
 </div>
-<div id="hypothesis-testing" class="section level2">
-<h2>Hypothesis Testing</h2>
-<ul>
-<li><a href="rmd_Anova.html">ANOVA</a></li>
-</ul>
+
+<div id="multi-group-comparisons" class="section level1">
+<h1>Multi-group Comparisons</h1>
+<div id="anova" class="section level3">
+<h3>Anova</h3>
+<pre class="r"><code>n &lt;- 1000
+
+set.seed(123)
+
+x &lt;- rnorm(n, 1)
+y &lt;- rnorm(n, 1.2)
+z &lt;- rnorm(n, 1.1)
+
+dat &lt;- data.frame(outcome = c(x,y,z),
+                  group = rep(c(&quot;X&quot;,&quot;Y&quot;,&quot;Z&quot;), each = n))
+
+fit &lt;- aov(outcome ~ group, data = dat)
+
+summary(fit)</code></pre>
+<pre><code>##               Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+## group          2   27.2  13.621    13.8 1.08e-06 ***
+## Residuals   2997 2957.1   0.987                     
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+</div>
+<div id="posthoc-test" class="section level3">
+<h3>PostHoc Test</h3>
+<pre class="r"><code>TukeyHSD(fit, ordered = TRUE)</code></pre>
+<pre><code>##   Tukey multiple comparisons of means
+##     95% family-wise confidence level
+##     factor levels have been ordered
+## 
+## Fit: aov(formula = outcome ~ group, data = dat)
+## 
+## $group
+##           diff         lwr       upr     p adj
+## Z-X 0.06375961 -0.04040611 0.1679253 0.3228639
+## Y-X 0.22633739  0.12217168 0.3305031 0.0000011
+## Y-Z 0.16257778  0.05841207 0.2667435 0.0007505</code></pre>
+</div>
 </div>
 
 

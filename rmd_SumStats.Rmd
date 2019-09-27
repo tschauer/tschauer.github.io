@@ -1,0 +1,31 @@
+---
+title: "Summary Statistics"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+# Location
+
+### Mean
+
+```{r}
+x <- rnorm(1000)
+
+mean(x)
+```
+
+### Median
+
+```{r}
+median(x)
+```
+
+# Spread
+
+### Standard Deviation
+
+```{r}
+sd(x)
+```
+

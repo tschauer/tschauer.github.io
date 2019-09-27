@@ -1,0 +1,35 @@
+---
+title: "ANOVA"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+# Multi-group Comparisons
+
+### Anova
+
+```{r}
+n <- 1000
+
+set.seed(123)
+
+x <- rnorm(n, 1)
+y <- rnorm(n, 1.2)
+z <- rnorm(n, 1.1)
+
+dat <- data.frame(outcome = c(x,y,z),
+                  group = rep(c("X","Y","Z"), each = n))
+
+fit <- aov(outcome ~ group, data = dat)
+
+summary(fit)
+```
+
+### PostHoc Test
+
+
+```{r}
+TukeyHSD(fit, ordered = TRUE)
+```
+
