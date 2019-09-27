@@ -1,4 +1,4 @@
-name: "my-website"
+name: "stats"
 output_dir: "."
 navbar:
   title: "Applied Statistics in Life Sciences"
