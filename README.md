@@ -1,4 +1,4 @@
 
 ## Project Website:
 
-https://tschauer.github.io/index.html
+https://tschauer.github.io/
