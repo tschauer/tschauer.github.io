@@ -1,0 +1,158 @@
+---
+title: "Simple Data Visualization"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+---
+
+# Data Types
+
+### continuous
+
+```{r}
+# blood pressure
+set.seed(111)
+blood_pressure <- rnorm(1000, mean = 120, sd = 10)
+head(blood_pressure)
+```
+
+### discrete
+
+```{r}
+# cell counts in a counting chamber
+set.seed(222)
+cell_counts <- rpois(1000, lambda = 10)
+head(cell_counts)
+```
+
+### categorical
+
+```{r}
+# blood type of person
+set.seed(333)
+blood_type <- factor(sample(c("A", "B", "AB", "0"), size = 1000, replace = T))
+head(blood_type)
+```
+
+---
+
+# Stripcharts
+
+```{r fig.align="center", fig.height=4, fig.width=8}
+par(mfrow=c(1,2))
+
+# overplot
+stripchart(blood_pressure, xlab = "Blood Pressure (mmHg)",
+           pch = 19, col = rgb(0,0,0,0.025), cex=0.75, method = "overplot")
+
+# jitter
+stripchart(blood_pressure, xlab = "Blood Pressure (mmHg)",
+           pch = 19, col = rgb(0,0,0,0.1), cex=0.75, method = "jitter")
+
+```
+
+
+```{r fig.align="center", fig.height=4, fig.width=8}
+par(mfrow=c(1,2))
+
+stripchart(cell_counts, xlab = "Cell Counts",
+           pch = 19, col = rgb(0,0,0,0.025), cex=0.75, method = "overplot")
+
+stripchart(cell_counts, xlab = "Cell Counts",
+           pch = 19, col = rgb(0,0,0,0.1), cex=0.75, method = "jitter")
+
+```
+
+---
+
+# Beeswarm
+
+```{r fig.align="center", fig.height=4, fig.width=8}
+library(beeswarm)
+
+par(mfrow=c(1,2))
+
+beeswarm(blood_pressure, xlab = "Blood Pressure (mmHg)",
+         pch = 19, col = rgb(0,0,0,0.1), cex=0.75, vertical = F)
+
+beeswarm(blood_pressure, xlab = "Blood Pressure (mmHg)",
+         pch = 19, col = rgb(0,0,0,0.1), cex=0.33, vertical = F)
+
+```
+
+
+```{r fig.align="center", fig.height=4, fig.width=8}
+par(mfrow=c(1,2))
+
+beeswarm(cell_counts, xlab = "Cell Counts",
+           pch = 19, col = rgb(0,0,0,0.1), cex=0.75, vertical = F)
+
+beeswarm(cell_counts, xlab = "Cell Counts",
+           pch = 19, col = rgb(0,0,0,0.1), cex=0.10, vertical = F)
+
+```
+
+---
+
+# Histograms
+
+```{r fig.align="center", fig.height=4, fig.width=12}
+par(mfrow=c(1,3), cex=1.25)
+
+hist(blood_pressure, xlab = "Blood Pressure (mmHg)", 
+     main = "", col = rgb(0,0,0,0.1), breaks = 10)
+
+hist(blood_pressure, xlab = "Blood Pressure (mmHg)", 
+     main = "", col = rgb(0,0,0,0.1), breaks = 30)
+
+hist(blood_pressure, xlab = "Blood Pressure (mmHg)", 
+     main = "", col = rgb(0,0,0,0.1), breaks = 50)
+
+```
+
+
+```{r fig.align="center", fig.height=4, fig.width=12}
+par(mfrow=c(1,3), cex=1.25)
+
+hist(cell_counts, xlab = "Cell Counts", 
+     main = "", col = rgb(0,0,0,0.1), breaks = 10)
+
+hist(cell_counts, xlab = "Cell Counts", 
+     main = "", col = rgb(0,0,0,0.1), breaks = 20)
+
+hist(cell_counts, xlab = "Cell Counts", 
+     main = "", col = rgb(0,0,0,0.1), breaks = 50)
+```
+
+---
+
+# Density plots
+
+```{r fig.align="center", fig.height=4, fig.width=8}
+par(mfrow=c(1,2))
+
+plot(density(blood_pressure), xlab = "Blood Pressure (mmHg)", 
+     main = "", col = rgb(0,0,0,0.8))
+
+plot(density(cell_counts), xlab = "Cell Counts", 
+     main = "", col = rgb(0,0,0,0.8))
+
+```
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+

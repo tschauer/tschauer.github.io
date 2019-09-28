@@ -13,8 +13,9 @@ The goal of this page is to collect statistical methods for experimental biology
 
 ---
 
-## Introduction
+## Basics
 
+- [Simple Data Visualization](rmd_SimpleDataViz.html)
 - [Summary Statistics](rmd_SumStats.html)
 
 ---
