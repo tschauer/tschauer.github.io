@@ -30,4 +30,16 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 ## Linear Models
 
 - [Generalized Linear Mixed Effect Models](rmd_GenMixEffMod.html)
+
+
+
 ---
+
+## Contact
+
+Tamas Schauer
+
+LMU, BMC, Bioinformatics Unit
+
+Email: tamas.schauer [at] med.uni-muenchen.de
+
