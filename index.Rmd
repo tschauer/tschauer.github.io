@@ -1,7 +1,7 @@
 ---
-title: "Applied Statistical Methods in Biology"
+title: "A Collection of Statistical Methods in Biology"
 author: by tschauer
-date: 27.09.2019
+date: '`r format(Sys.time(), "%d %B, %Y")`'
 ---
     
 
@@ -9,7 +9,8 @@ date: 27.09.2019
 
 ## Preface
 
-The goal of this page is to collect statistical methods for experimental biology. From basics to intermediate level. 
+* The goal of this page is to collect statistical methods for experimental biology. From basics to intermediate level. 
+* The methods shown here use the statistical programming language R.
 
 ---
 
