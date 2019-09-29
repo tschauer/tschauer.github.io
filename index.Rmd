@@ -25,3 +25,8 @@ The goal of this page is to collect statistical methods for experimental biology
 - [ANOVA](rmd_Anova.html)
 
 ---
+
+## Linear Models
+
+- [Generalized Linear Mixed Effect Models](rmd_GenMixEffMod.html)
+---

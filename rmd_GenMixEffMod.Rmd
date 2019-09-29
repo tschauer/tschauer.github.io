@@ -1,0 +1,188 @@
+---
+title: "Generalized Linear Mixed Effect Models"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+
+<style>
+a {
+  font-size: 16px;
+}
+</style>
+
+---
+
+
+```{r global options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
+```
+
+---
+
+# Microscopy Data
+
+* cells were stained for centromeric marker
+* outcome: number of centromeric clusters (counts)
+* conditions: CenpC vs. GST RNAi
+* replicate: experimental day
+* 4 microscopy slides in total
+* cells are not independent on the same slide
+
+```{r, }
+# insert data
+dat <- data.frame(experiment = rep(c("day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1"),2),
+                 RNAi = rep(c("GST", "CenpC"), each = 100),
+                 counts = c(6, 6, 4, 6, 3, 5, 10, 9, 5, 4, 8, 4, 9, 7, 7, 2, 6, 9, 4, 3, 5, 4, 4, 2, 8, 4, 5, 6, 3, 7, 7, 4, 6, 3, 3, 3, 7, 5, 5, 4, 5, 5, 5, 6, 5, 3, 3, 4, 5, 5, 2, 3, 4, 4, 4, 7, 5, 4, 6, 4, 5, 4, 4, 5, 4, 4, 5, 2, 5, 4, 5, 4, 6, 10, 5, 6, 4, 11, 3, 13, 3, 6, 3, 5, 5, 4, 4, 4, 4, 6, 8, 6, 4, 11, 5, 4, 5, 1, 2, 4, 16, 6, 9, 7, 11, 12, 6, 3, 7, 8, 8, 12, 7, 9, 5, 9, 5, 10, 7, 6, 7, 19, 3, 13, 7, 6, 13, 8, 8, 11, 7, 13, 10, 6, 4, 13, 3, 4, 2, 10, 6, 8, 6, 9, 9, 5, 4, 20, 2, 5, 7, 5, 10, 4, 7, 5, 6, 3, 4, 7, 9, 8, 16, 6, 10, 8, 5, 6, 4, 11, 6, 2, 6, 8, 11, 6, 5, 8, 8, 7, 10, 9, 7, 4, 6, 8, 2, 10, 7, 8, 3, 4, 10, 13, 6, 12, 8, 1, 5, 6))
+
+# group for each slide
+dat$slide <- factor(paste(dat$RNAi, dat$experiment, sep = "_"))
+
+# relevel RNAi
+dat$RNAi <- relevel(dat$RNAi, ref = "GST")
+
+# check factor levels
+str(dat)
+
+# simple summary
+summary(dat)
+```
+
+
+---
+
+# Data Visualization
+
+* visualization of the datapoints (beeswarm) and boxplot
+* effect looks 'clear' by eye
+* it does not look normally distributed (also tied values)
+* variance does not look homogeneous
+
+```{r, fig.align="center"}
+library(beeswarm)
+boxplot(counts ~ slide, data = dat, ylim = c(0,20))
+beeswarm(counts ~ slide, data = dat, pch=19, col="#00000088", add = TRUE)
+```
+
+
+
+---
+
+# Data Distribution
+
+* inspecting data distribution by qqplot
+* Poisson and negative binomial looks better
+
+```{r, message=FALSE, results=F, warning=F, fig.height=4, fig.width=12}
+library(car)
+library(MASS)
+
+par(mfrow = c(1,4), cex=1.1)
+attach(dat)
+
+# normal distribution (it does not look "normal")
+qqp(counts, "norm", pch = 20)
+
+# lognormal distribution
+qqp(counts, "lnorm", pch = 20)
+
+# Poisson distribution
+poisson <- fitdistr(counts, "Poisson")
+qqp(counts, "pois", lambda = poisson$estimate, pch = 20)
+
+# negative binomial distribution (Poisson + overdispersion)
+negbinom <- fitdistr(counts, "negative binomial")
+qqp(counts, "nbinom", size = negbinom$estimate[1], mu = negbinom$estimate[2], pch = 20)
+```
+
+
+# Mixed Effect models
+
+* the model contains fixed and random effects
+* beta - vector of fixed effects
+* u - vector of random effects
+* formula:
+
+![Source: wikipedia](https://wikimedia.org/api/rest_v1/media/math/render/svg/e00ba9a8e13237ca374d55bb3070aebd12a5b8e4)
+
+Wikipedia Links:
+
+https://en.wikipedia.org/wiki/Multilevel_model
+
+https://en.wikipedia.org/wiki/Mixed_model
+
+---
+
+
+* general scheme how to choose fixed and mixed effect models
+
+![Source: http://www.flutterbys.com.au/stats/tut/tut11.7a.html](http://www.flutterbys.com.au/stats/tut/images/tut11.7aDecision.png)
+
+---
+
+### MASS glmmPQL
+
+* fit a glmm 
+* fixed effect: RNAi (treatment)
+* random intercept: slide (groups)
+* negative binomial family
+
+
+```{r}
+# fit a fixed effect glm for estimating theta (dispersion) parameter
+glm_fixed <- glm.nb(counts ~ RNAi, data = dat)
+theta <- glm_fixed$theta
+
+# use theta in glmm
+glmm <- glmmPQL(counts ~ RNAi, random = ~1|slide, data = dat, family = negative.binomial(link = "log", theta = theta))
+summary(glmm)
+```
+
+<br />
+
+* get means by exponentiation
+
+```{r}
+library(nlme)
+as.numeric(c(exp(fixed.effects(glmm))[1], 
+             exp(fixed.effects(glmm))[1] * exp(fixed.effects(glmm))[2]))
+```
+
+* Conclusion: CenpC RNAi significantly increases the number of centromeric clusters 
+* Mean difference: ~2.5, p-value: ~0.03, n of experiments: 2, n of cells: 200
+
+---
+
+### Subsampling
+
+* check whether number of observations (cells) influence results
+* subsample (half) and replicate 100x for obtaining p-values
+
+```{r}
+
+pvals <- replicate(n = 100, expr = {
+              
+dat_sub <- dat[sample(1:200, size = 100),]
+
+glmm_sub <- glmmPQL(counts ~ RNAi, random = ~1|slide, data = dat_sub, family = negative.binomial(link = "log", theta = theta),
+                      verbose = F)
+coef(summary(glmm_sub))[2,5]
+})
+
+summary(pvals)
+```
+<br />
+
+* Conclusion: the number of cells has an influence but not so dramatic
+* it would be interesting to see how more replicates (exp. days) would change results
+
+---
+
+### Detailed Tutorial
+
+Many thanks for this page:
+
+http://www.flutterbys.com.au/stats/tut/tut11.7a.html
+
+

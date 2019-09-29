@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Generalized Linear Mixed Effect Models</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Blog</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Generalized Linear Mixed Effect Models</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#microscopy-data">Microscopy Data</a></li>
+<li><a href="#data-visualization">Data Visualization</a></li>
+<li><a href="#data-distribution">Data Distribution</a></li>
+<li><a href="#mixed-effect-models">Mixed Effect models</a><ul>
+<li><a href="#mass-glmmpql">MASS glmmPQL</a></li>
+<li><a href="#subsampling">Subsampling</a></li>
+<li><a href="#detailed-tutorial">Detailed Tutorial</a></li>
+</ul></li>
+</ul>
+</div>
+
+<style>
+a {
+  font-size: 16px;
+}
+</style>
+<hr />
+<hr />
+<div id="microscopy-data" class="section level1">
+<h1>Microscopy Data</h1>
+<ul>
+<li>cells were stained for centromeric marker</li>
+<li>outcome: number of centromeric clusters (counts)</li>
+<li>conditions: CenpC vs. GST RNAi</li>
+<li>replicate: experimental day</li>
+<li>4 microscopy slides in total</li>
+<li>cells are not independent on the same slide</li>
+</ul>
+<pre class="r"><code># insert data
+dat &lt;- data.frame(experiment = rep(c(&quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;),2),
+                 RNAi = rep(c(&quot;GST&quot;, &quot;CenpC&quot;), each = 100),
+                 counts = c(6, 6, 4, 6, 3, 5, 10, 9, 5, 4, 8, 4, 9, 7, 7, 2, 6, 9, 4, 3, 5, 4, 4, 2, 8, 4, 5, 6, 3, 7, 7, 4, 6, 3, 3, 3, 7, 5, 5, 4, 5, 5, 5, 6, 5, 3, 3, 4, 5, 5, 2, 3, 4, 4, 4, 7, 5, 4, 6, 4, 5, 4, 4, 5, 4, 4, 5, 2, 5, 4, 5, 4, 6, 10, 5, 6, 4, 11, 3, 13, 3, 6, 3, 5, 5, 4, 4, 4, 4, 6, 8, 6, 4, 11, 5, 4, 5, 1, 2, 4, 16, 6, 9, 7, 11, 12, 6, 3, 7, 8, 8, 12, 7, 9, 5, 9, 5, 10, 7, 6, 7, 19, 3, 13, 7, 6, 13, 8, 8, 11, 7, 13, 10, 6, 4, 13, 3, 4, 2, 10, 6, 8, 6, 9, 9, 5, 4, 20, 2, 5, 7, 5, 10, 4, 7, 5, 6, 3, 4, 7, 9, 8, 16, 6, 10, 8, 5, 6, 4, 11, 6, 2, 6, 8, 11, 6, 5, 8, 8, 7, 10, 9, 7, 4, 6, 8, 2, 10, 7, 8, 3, 4, 10, 13, 6, 12, 8, 1, 5, 6))
+
+# group for each slide
+dat$slide &lt;- factor(paste(dat$RNAi, dat$experiment, sep = &quot;_&quot;))
+
+# relevel RNAi
+dat$RNAi &lt;- relevel(dat$RNAi, ref = &quot;GST&quot;)
+
+# check factor levels
+str(dat)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    200 obs. of  4 variables:
+##  $ experiment: Factor w/ 2 levels &quot;day1&quot;,&quot;day2&quot;: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ RNAi      : Factor w/ 2 levels &quot;GST&quot;,&quot;CenpC&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ counts    : num  6 6 4 6 3 5 10 9 5 4 ...
+##  $ slide     : Factor w/ 4 levels &quot;CenpC_day1&quot;,&quot;CenpC_day2&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...</code></pre>
+<pre class="r"><code># simple summary
+summary(dat)</code></pre>
+<pre><code>##  experiment    RNAi         counts              slide   
+##  day1:100   GST  :100   Min.   : 1.000   CenpC_day1:50  
+##  day2:100   CenpC:100   1st Qu.: 4.000   CenpC_day2:50  
+##                         Median : 6.000   GST_day1  :50  
+##                         Mean   : 6.275   GST_day2  :50  
+##                         3rd Qu.: 8.000                  
+##                         Max.   :20.000</code></pre>
+<hr />
+</div>
+<div id="data-visualization" class="section level1">
+<h1>Data Visualization</h1>
+<ul>
+<li>visualization of the datapoints (beeswarm) and boxplot</li>
+<li>effect looks ‘clear’ by eye</li>
+<li>it does not look normally distributed (also tied values)</li>
+<li>variance does not look homogeneous</li>
+</ul>
+<pre class="r"><code>library(beeswarm)
+boxplot(counts ~ slide, data = dat, ylim = c(0,20))
+beeswarm(counts ~ slide, data = dat, pch=19, col=&quot;#00000088&quot;, add = TRUE)</code></pre>
+<p><img src="rmd_GenMixEffMod_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<hr />
+</div>
+<div id="data-distribution" class="section level1">
+<h1>Data Distribution</h1>
+<ul>
+<li>inspecting data distribution by qqplot</li>
+<li>Poisson and negative binomial looks better</li>
+</ul>
+<pre class="r"><code>library(car)
+library(MASS)
+
+par(mfrow = c(1,4), cex=1.1)
+attach(dat)
+
+# normal distribution (it does not look &quot;normal&quot;)
+qqp(counts, &quot;norm&quot;, pch = 20)
+
+# lognormal distribution
+qqp(counts, &quot;lnorm&quot;, pch = 20)
+
+# Poisson distribution
+poisson &lt;- fitdistr(counts, &quot;Poisson&quot;)
+qqp(counts, &quot;pois&quot;, lambda = poisson$estimate, pch = 20)
+
+# negative binomial distribution (Poisson + overdispersion)
+negbinom &lt;- fitdistr(counts, &quot;negative binomial&quot;)
+qqp(counts, &quot;nbinom&quot;, size = negbinom$estimate[1], mu = negbinom$estimate[2], pch = 20)</code></pre>
+<p><img src="rmd_GenMixEffMod_files/figure-html/unnamed-chunk-3-1.png" width="1152" /></p>
+</div>
+<div id="mixed-effect-models" class="section level1">
+<h1>Mixed Effect models</h1>
+<ul>
+<li>the model contains fixed and random effects</li>
+<li>beta - vector of fixed effects</li>
+<li>u - vector of random effects</li>
+<li>formula:</li>
+</ul>
+<div class="figure">
+<img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/e00ba9a8e13237ca374d55bb3070aebd12a5b8e4" alt="Source: wikipedia" />
+<p class="caption">Source: wikipedia</p>
+</div>
+<p>Wikipedia Links:</p>
+<p><a href="https://en.wikipedia.org/wiki/Multilevel_model" class="uri">https://en.wikipedia.org/wiki/Multilevel_model</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Mixed_model" class="uri">https://en.wikipedia.org/wiki/Mixed_model</a></p>
+<hr />
+<ul>
+<li>general scheme how to choose fixed and mixed effect models</li>
+</ul>
+<div class="figure">
+<img src="http://www.flutterbys.com.au/stats/tut/images/tut11.7aDecision.png" alt="Source: http://www.flutterbys.com.au/stats/tut/tut11.7a.html" />
+<p class="caption">Source: <a href="http://www.flutterbys.com.au/stats/tut/tut11.7a.html" class="uri">http://www.flutterbys.com.au/stats/tut/tut11.7a.html</a></p>
+</div>
+<hr />
+<div id="mass-glmmpql" class="section level3">
+<h3>MASS glmmPQL</h3>
+<ul>
+<li>fit a glmm</li>
+<li>fixed effect: RNAi (treatment)</li>
+<li>random intercept: slide (groups)</li>
+<li>negative binomial family</li>
+</ul>
+<pre class="r"><code># fit a fixed effect glm for estimating theta (dispersion) parameter
+glm_fixed &lt;- glm.nb(counts ~ RNAi, data = dat)
+theta &lt;- glm_fixed$theta
+
+# use theta in glmm
+glmm &lt;- glmmPQL(counts ~ RNAi, random = ~1|slide, data = dat, family = negative.binomial(link = &quot;log&quot;, theta = theta))
+summary(glmm)</code></pre>
+<pre><code>## Linear mixed-effects model fit by maximum likelihood
+##  Data: dat 
+##   AIC BIC logLik
+##    NA  NA     NA
+## 
+## Random effects:
+##  Formula: ~1 | slide
+##         (Intercept)  Residual
+## StdDev: 0.009718551 0.9935715
+## 
+## Variance function:
+##  Structure: fixed weights
+##  Formula: ~invwt 
+## Fixed effects: counts ~ RNAi 
+##                 Value  Std.Error  DF  t-value p-value
+## (Intercept) 1.6174061 0.04919156 196 32.87975  0.0000
+## RNAiCenpC   0.3988294 0.06472175   2  6.16222  0.0253
+##  Correlation: 
+##           (Intr)
+## RNAiCenpC -0.76 
+## 
+## Standardized Within-Group Residuals:
+##        Min         Q1        Med         Q3        Max 
+## -2.0948686 -0.4920140 -0.1595450  0.3940259  4.0237412 
+## 
+## Number of Observations: 200
+## Number of Groups: 4</code></pre>
+<p><br /></p>
+<ul>
+<li>get means by exponentiation</li>
+</ul>
+<pre class="r"><code>library(nlme)
+as.numeric(c(exp(fixed.effects(glmm))[1], 
+             exp(fixed.effects(glmm))[1] * exp(fixed.effects(glmm))[2]))</code></pre>
+<pre><code>## [1] 5.04 7.51</code></pre>
+<ul>
+<li>Conclusion: CenpC RNAi significantly increases the number of centromeric clusters</li>
+<li>Mean difference: ~2.5, p-value: ~0.03, n of experiments: 2, n of cells: 200</li>
+</ul>
+<hr />
+</div>
+<div id="subsampling" class="section level3">
+<h3>Subsampling</h3>
+<ul>
+<li>check whether number of observations (cells) influence results</li>
+<li>subsample (half) and replicate 100x for obtaining p-values</li>
+</ul>
+<pre class="r"><code>pvals &lt;- replicate(n = 100, expr = {
+              
+dat_sub &lt;- dat[sample(1:200, size = 100),]
+
+glmm_sub &lt;- glmmPQL(counts ~ RNAi, random = ~1|slide, data = dat_sub, family = negative.binomial(link = &quot;log&quot;, theta = theta),
+                      verbose = F)
+coef(summary(glmm_sub))[2,5]
+})
+
+summary(pvals)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+## 0.02168 0.04236 0.05290 0.05651 0.06429 0.13279</code></pre>
+<p><br /></p>
+<ul>
+<li>Conclusion: the number of cells has an influence but not so dramatic</li>
+<li>it would be interesting to see how more replicates (exp. days) would change results</li>
+</ul>
+<hr />
+</div>
+<div id="detailed-tutorial" class="section level3">
+<h3>Detailed Tutorial</h3>
+<p>Many thanks for this page:</p>
+<p><a href="http://www.flutterbys.com.au/stats/tut/tut11.7a.html" class="uri">http://www.flutterbys.com.au/stats/tut/tut11.7a.html</a></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
