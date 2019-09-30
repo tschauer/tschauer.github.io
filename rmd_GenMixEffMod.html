@@ -329,38 +329,38 @@ a {
 <ul>
 <li>cells were stained for centromeric marker</li>
 <li>outcome: number of centromeric clusters (counts)</li>
-<li>conditions: CenpC vs. GST RNAi</li>
+<li>conditions: Target vs. Control RNAi</li>
 <li>replicate: experimental day</li>
 <li>4 microscopy slides in total</li>
 <li>cells are not independent on the same slide</li>
 </ul>
 <pre class="r"><code># insert data
 dat &lt;- data.frame(experiment = rep(c(&quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day2&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;, &quot;day1&quot;),2),
-                 RNAi = rep(c(&quot;GST&quot;, &quot;CenpC&quot;), each = 100),
+                 RNAi = rep(c(&quot;Control&quot;, &quot;Target&quot;), each = 100),
                  counts = c(6, 6, 4, 6, 3, 5, 10, 9, 5, 4, 8, 4, 9, 7, 7, 2, 6, 9, 4, 3, 5, 4, 4, 2, 8, 4, 5, 6, 3, 7, 7, 4, 6, 3, 3, 3, 7, 5, 5, 4, 5, 5, 5, 6, 5, 3, 3, 4, 5, 5, 2, 3, 4, 4, 4, 7, 5, 4, 6, 4, 5, 4, 4, 5, 4, 4, 5, 2, 5, 4, 5, 4, 6, 10, 5, 6, 4, 11, 3, 13, 3, 6, 3, 5, 5, 4, 4, 4, 4, 6, 8, 6, 4, 11, 5, 4, 5, 1, 2, 4, 16, 6, 9, 7, 11, 12, 6, 3, 7, 8, 8, 12, 7, 9, 5, 9, 5, 10, 7, 6, 7, 19, 3, 13, 7, 6, 13, 8, 8, 11, 7, 13, 10, 6, 4, 13, 3, 4, 2, 10, 6, 8, 6, 9, 9, 5, 4, 20, 2, 5, 7, 5, 10, 4, 7, 5, 6, 3, 4, 7, 9, 8, 16, 6, 10, 8, 5, 6, 4, 11, 6, 2, 6, 8, 11, 6, 5, 8, 8, 7, 10, 9, 7, 4, 6, 8, 2, 10, 7, 8, 3, 4, 10, 13, 6, 12, 8, 1, 5, 6))
 
 # group for each slide
 dat$slide &lt;- factor(paste(dat$RNAi, dat$experiment, sep = &quot;_&quot;))
 
 # relevel RNAi
-dat$RNAi &lt;- relevel(dat$RNAi, ref = &quot;GST&quot;)
+dat$RNAi &lt;- relevel(dat$RNAi, ref = &quot;Control&quot;)
 
 # check factor levels
 str(dat)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    200 obs. of  4 variables:
 ##  $ experiment: Factor w/ 2 levels &quot;day1&quot;,&quot;day2&quot;: 2 2 2 2 2 2 2 2 2 2 ...
-##  $ RNAi      : Factor w/ 2 levels &quot;GST&quot;,&quot;CenpC&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ RNAi      : Factor w/ 2 levels &quot;Control&quot;,&quot;Target&quot;: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ counts    : num  6 6 4 6 3 5 10 9 5 4 ...
-##  $ slide     : Factor w/ 4 levels &quot;CenpC_day1&quot;,&quot;CenpC_day2&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...</code></pre>
+##  $ slide     : Factor w/ 4 levels &quot;Control_day1&quot;,..: 2 2 2 2 2 2 2 2 2 2 ...</code></pre>
 <pre class="r"><code># simple summary
 summary(dat)</code></pre>
-<pre><code>##  experiment    RNAi         counts              slide   
-##  day1:100   GST  :100   Min.   : 1.000   CenpC_day1:50  
-##  day2:100   CenpC:100   1st Qu.: 4.000   CenpC_day2:50  
-##                         Median : 6.000   GST_day1  :50  
-##                         Mean   : 6.275   GST_day2  :50  
-##                         3rd Qu.: 8.000                  
-##                         Max.   :20.000</code></pre>
+<pre><code>##  experiment      RNAi         counts                slide   
+##  day1:100   Control:100   Min.   : 1.000   Control_day1:50  
+##  day2:100   Target :100   1st Qu.: 4.000   Control_day2:50  
+##                           Median : 6.000   Target_day1 :50  
+##                           Mean   : 6.275   Target_day2 :50  
+##                           3rd Qu.: 8.000                    
+##                           Max.   :20.000</code></pre>
 <hr />
 </div>
 <div id="data-visualization" class="section level1">
@@ -459,10 +459,10 @@ summary(glmm)</code></pre>
 ## Fixed effects: counts ~ RNAi 
 ##                 Value  Std.Error  DF  t-value p-value
 ## (Intercept) 1.6174061 0.04919156 196 32.87975  0.0000
-## RNAiCenpC   0.3988294 0.06472175   2  6.16222  0.0253
+## RNAiTarget  0.3988294 0.06472175   2  6.16222  0.0253
 ##  Correlation: 
-##           (Intr)
-## RNAiCenpC -0.76 
+##            (Intr)
+## RNAiTarget -0.76 
 ## 
 ## Standardized Within-Group Residuals:
 ##        Min         Q1        Med         Q3        Max 
@@ -479,7 +479,7 @@ as.numeric(c(exp(fixed.effects(glmm))[1],
              exp(fixed.effects(glmm))[1] * exp(fixed.effects(glmm))[2]))</code></pre>
 <pre><code>## [1] 5.04 7.51</code></pre>
 <ul>
-<li>Conclusion: CenpC RNAi significantly increases the number of centromeric clusters</li>
+<li>Conclusion: Target RNAi significantly increases the number of centromeric clusters</li>
 <li>Mean difference: ~2.5, p-value: ~0.03, n of experiments: 2, n of cells: 200</li>
 </ul>
 <hr />

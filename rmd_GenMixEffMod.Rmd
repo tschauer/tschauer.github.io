@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
 
 * cells were stained for centromeric marker
 * outcome: number of centromeric clusters (counts)
-* conditions: CenpC vs. GST RNAi
+* conditions: Target vs. Control RNAi
 * replicate: experimental day
 * 4 microscopy slides in total
 * cells are not independent on the same slide
@@ -33,14 +33,14 @@ knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
 ```{r, }
 # insert data
 dat <- data.frame(experiment = rep(c("day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day2", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1", "day1"),2),
-                 RNAi = rep(c("GST", "CenpC"), each = 100),
+                 RNAi = rep(c("Control", "Target"), each = 100),
                  counts = c(6, 6, 4, 6, 3, 5, 10, 9, 5, 4, 8, 4, 9, 7, 7, 2, 6, 9, 4, 3, 5, 4, 4, 2, 8, 4, 5, 6, 3, 7, 7, 4, 6, 3, 3, 3, 7, 5, 5, 4, 5, 5, 5, 6, 5, 3, 3, 4, 5, 5, 2, 3, 4, 4, 4, 7, 5, 4, 6, 4, 5, 4, 4, 5, 4, 4, 5, 2, 5, 4, 5, 4, 6, 10, 5, 6, 4, 11, 3, 13, 3, 6, 3, 5, 5, 4, 4, 4, 4, 6, 8, 6, 4, 11, 5, 4, 5, 1, 2, 4, 16, 6, 9, 7, 11, 12, 6, 3, 7, 8, 8, 12, 7, 9, 5, 9, 5, 10, 7, 6, 7, 19, 3, 13, 7, 6, 13, 8, 8, 11, 7, 13, 10, 6, 4, 13, 3, 4, 2, 10, 6, 8, 6, 9, 9, 5, 4, 20, 2, 5, 7, 5, 10, 4, 7, 5, 6, 3, 4, 7, 9, 8, 16, 6, 10, 8, 5, 6, 4, 11, 6, 2, 6, 8, 11, 6, 5, 8, 8, 7, 10, 9, 7, 4, 6, 8, 2, 10, 7, 8, 3, 4, 10, 13, 6, 12, 8, 1, 5, 6))
 
 # group for each slide
 dat$slide <- factor(paste(dat$RNAi, dat$experiment, sep = "_"))
 
 # relevel RNAi
-dat$RNAi <- relevel(dat$RNAi, ref = "GST")
+dat$RNAi <- relevel(dat$RNAi, ref = "Control")
 
 # check factor levels
 str(dat)
@@ -149,7 +149,7 @@ as.numeric(c(exp(fixed.effects(glmm))[1],
              exp(fixed.effects(glmm))[1] * exp(fixed.effects(glmm))[2]))
 ```
 
-* Conclusion: CenpC RNAi significantly increases the number of centromeric clusters 
+* Conclusion: Target RNAi significantly increases the number of centromeric clusters 
 * Mean difference: ~2.5, p-value: ~0.03, n of experiments: 2, n of cells: 200
 
 ---
