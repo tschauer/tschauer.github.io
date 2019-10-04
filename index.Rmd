@@ -23,7 +23,8 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ## Hypothesis Testing
 
-- [ANOVA](rmd_Anova.html)
+- [ANOVA - Simulations](rmd_Anova.html)
+- [ANOVA - qPCR Example](rmd_qPCR.html)
 
 ---
 

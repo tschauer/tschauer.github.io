@@ -1,0 +1,168 @@
+---
+title: "qPCR - Multigroup Comparison"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+
+<style>
+pre {
+  overflow-x: auto;
+}
+pre code {
+  word-wrap: normal;
+  white-space: pre;
+}
+a {
+  font-size: 16px;
+}
+</style>
+
+
+
+```{r global options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
+```
+
+---
+
+
+# qPCR Data
+
+### Short Description
+
+* Comparison of expression changes in chromatin remodelling mutants
+* 2 mutant gene mutations and double mutant were investigated
+* One target gene and control gene were measured
+
+```{r, }
+# insert data
+df <- data.frame(genotype = c("WT", "WT", "WT",  "mut1", "mut1", "mut1",  "mut2", "mut2", "mut2",  "doublemut", "doublemut", "doublemut"),
+                 control_gene = c(143.2632804, 143.2016045, 121.5441674,  120.8509654, 135.2941841, 146.6159225,  147.3569572, 159.5510244, 41.53608903,  112.2483313, 145.9524333, 142.2499418),
+                 target_gene = c(0.045530984, 0.029892154, 0.018934757,  0.057283056, 0.053640269, 0.072897732,  0.235321652, 0.2810932, 0.067345158,  0.1904679, 0.271456991, 0.158710149)
+)
+
+df
+```
+
+
+### Calculate log2 Fold Change
+
+```{r}
+# target gene vs control gene
+df$diff <- log2(df$target_gene) - log2(df$control_gene)
+
+# either way is the same
+cbind(log2(df$target_gene) - log2(df$control_gene),
+      log2(df$target_gene / df$control_gene))
+
+```
+
+
+---
+
+
+# Data Distribution
+
+### Normality test
+
+
+```{r, message=FALSE, fig.height=5, fig.width=5}
+# test whether it is significantly different from normal distribution
+shapiro.test(x = df$diff)
+
+# visual inspection
+library(ggpubr)
+ggqqplot(df$diff)
+```
+
+### Variance homogeneity test
+```{r, message=FALSE}
+# test whether group variances are different
+library(car)
+
+leveneTest(diff ~ genotype, data = df) 
+```
+
+
+---
+
+
+# Test for Differences
+
+### Fit Anova model
+
+```{r}
+# if assumptions are met fit anova
+fit <- aov(formula = diff ~ genotype, data = df)
+
+summary(fit)
+```
+
+### PostHoc Tukey Test
+
+```{r}
+# if anova test is significant perform multiple pair-wise comparisons
+test <- TukeyHSD(fit, ordered = TRUE)
+
+test
+```
+
+
+---
+
+
+# Plots
+
+### Mean Difference
+
+```{r, fig.height=5, fig.width=5}
+# plot mean differences with 95% confidence intervals
+par(mar=c(4,8,4,1))
+
+plot(test, las=1)
+```
+
+* Conclusions: all mutants are significantly different from wild-type. Mutation 2 and double mutant are significantly different from mutation 1 but not from each other. This suggests an epistatic genetic interaction between the two mutation on the target gene.
+
+
+<!-- ### Fold Changes -->
+
+
+<!-- ```{r, fig.height=5, fig.width=5} -->
+<!-- # exponentiate mean and confidence intervals -->
+<!-- # error bars are not symmetric -->
+<!-- par(mar=c(4,4,4,1)) -->
+
+<!-- centers <- barplot(2^test$genotype[1:3,1],  -->
+<!--                    ylim = c(0,16), ylab = "Fold Change") -->
+
+<!-- arrows(x0 = centers,  -->
+<!--        x1 = centers,  -->
+<!--        y0 = 2^test$genotype[1:3,2],  -->
+<!--        y1 = 2^test$genotype[1:3,3],  -->
+<!--        angle = 90, code = 3, length = 0.1) -->
+<!-- ``` -->
+
+
+---
+
+
+# References
+
+http://www.sthda.com/english/wiki/wiki.php?title=normality-test-in-r
+
+http://www.sthda.com/english/wiki/compare-multiple-sample-variances-in-r
+
+http://www.sthda.com/english/wiki/wiki.php?title=one-way-anova-test-in-r
+
+
+---
+
+
+# Data Source
+
+The dataset was provided by Magdalena Murawska (LMU, BMC, Ladurner group)
+
+
