@@ -30,11 +30,11 @@ knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
 
 # qPCR Data
 
-### Short Description
+### Description
 
 * Comparison of expression changes in chromatin remodelling mutants
-* 2 mutant gene mutations and double mutant were investigated
-* One target gene and control gene were measured
+* Two mutations and double mutant were investigated
+* One target gene and control gene were measured by RT-qPCR
 
 ```{r, }
 # insert data

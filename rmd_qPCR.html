@@ -306,7 +306,7 @@ $(document).ready(function () {
 <div id="TOC">
 <ul>
 <li><a href="#qpcr-data">qPCR Data</a><ul>
-<li><a href="#short-description">Short Description</a></li>
+<li><a href="#description">Description</a></li>
 <li><a href="#calculate-log2-fold-change">Calculate log2 Fold Change</a></li>
 </ul></li>
 <li><a href="#data-distribution">Data Distribution</a><ul>
@@ -340,12 +340,12 @@ a {
 <hr />
 <div id="qpcr-data" class="section level1">
 <h1>qPCR Data</h1>
-<div id="short-description" class="section level3">
-<h3>Short Description</h3>
+<div id="description" class="section level3">
+<h3>Description</h3>
 <ul>
 <li>Comparison of expression changes in chromatin remodelling mutants</li>
-<li>2 mutant gene mutations and double mutant were investigated</li>
-<li>One target gene and control gene were measured</li>
+<li>Two mutations and double mutant were investigated</li>
+<li>One target gene and control gene were measured by RT-qPCR</li>
 </ul>
 <pre class="r"><code># insert data
 df &lt;- data.frame(genotype = c(&quot;WT&quot;, &quot;WT&quot;, &quot;WT&quot;,  &quot;mut1&quot;, &quot;mut1&quot;, &quot;mut1&quot;,  &quot;mut2&quot;, &quot;mut2&quot;, &quot;mut2&quot;,  &quot;doublemut&quot;, &quot;doublemut&quot;, &quot;doublemut&quot;),
