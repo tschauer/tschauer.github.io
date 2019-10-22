@@ -11,6 +11,7 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 * The goal of this page is to collect statistical methods for experimental biology. From basics to intermediate level. 
 * The methods shown here use the statistical programming language R.
+* Some of the examples include common mistakes/traps
 
 ---
 
@@ -25,6 +26,14 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 - [ANOVA - Simulations](rmd_Anova.html)
 - [ANOVA - qPCR Example](rmd_qPCR.html)
+
+
+---
+
+## Correlation
+
+- [Binning and Correlation - Simulations](rmd_binning.html)
+
 
 ---
 

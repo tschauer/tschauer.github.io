@@ -9,10 +9,9 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="by tschauer" />
 
 
-<title>A Collection of Statistical Methods in Biology</title>
+<title>Data Binning and Correlation</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -300,58 +299,138 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">A Collection of Statistical Methods in Biology</h1>
-<h4 class="author">by tschauer</h4>
-<h4 class="date">22 October, 2019</h4>
+<h1 class="title toc-ignore">Data Binning and Correlation</h1>
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#simulation">Simulation</a></li>
+<li><a href="#binning">Binning</a></li>
+<li><a href="#conclusions">Conclusions</a></li>
+<li><a href="#links">Links</a></li>
+</ul>
+</div>
 
+<style>
+pre {
+  overflow-x: auto;
+}
+pre code {
+  word-wrap: normal;
+  white-space: pre;
+}
+a {
+  font-size: 16px;
+}
+</style>
 <hr />
-<div id="preface" class="section level2">
-<h2>Preface</h2>
 <ul>
-<li>The goal of this page is to collect statistical methods for experimental biology. From basics to intermediate level.</li>
-<li>The methods shown here use the statistical programming language R.</li>
-<li>Some of the examples include common mistakes/traps</li>
+<li>Aim: demonstrate how binning affects correlation</li>
+</ul>
+<hr />
+<div id="simulation" class="section level3">
+<h3>Simulation</h3>
+<ul>
+<li>random data from normal distribution</li>
+<li>set.seed for reproducibility</li>
+<li>seed was purposely selected to have a weak association</li>
+</ul>
+<pre class="r"><code># set n
+n &lt;- 5000
+
+# generate data
+set.seed(285)
+
+df &lt;- data.frame(x = rnorm(n),
+                 y = rnorm(n))
+
+# order by x
+df &lt;- df[order(df$x),]</code></pre>
+<pre class="r"><code># plot data
+par(mfrow=c(1,1))
+
+plot(y ~ x, data = df, main = &quot;&quot;, pch=19, col = &quot;#00000022&quot;, xlim = c(-4,4), ylim = c(-4,4))
+legend(&quot;topleft&quot;, legend = paste(&quot;r =&quot;, round(cor(df$x,df$y),2)))
+legend(&quot;topright&quot;, legend = paste(&quot;pval =&quot;, format(cor.test(df$x,df$y)$p.value, digits = 2, scientific = T)))
+abline(lm(y ~x, data = df), col=&quot;red3&quot;, lwd=2)</code></pre>
+<p><img src="rmd_binning_files/figure-html/unnamed-chunk-2-1.png" width="576" style="display: block; margin: auto;" /></p>
+<ul>
+<li>very weak assosication</li>
+<li>p-value is misleading (&lt;0.05)</li>
 </ul>
 <hr />
 </div>
-<div id="basics" class="section level2">
-<h2>Basics</h2>
+<div id="binning" class="section level3">
+<h3>Binning</h3>
 <ul>
-<li><a href="rmd_SimpleDataViz.html">Simple Data Visualization</a></li>
-<li><a href="rmd_SumStats.html">Summary Statistics</a></li>
+<li>bin and average both x and y variables</li>
+</ul>
+<pre class="r"><code>par(mfrow=c(2,2), oma=c(2,2,2,2))
+
+# plot without binning
+plot(y ~ x, data = df, main = &quot;no binning&quot;, pch=19, col = &quot;#00000022&quot;)
+legend(&quot;topleft&quot;, legend = paste(&quot;r =&quot;, round(cor(df$x,df$y),2)))
+legend(&quot;topright&quot;, legend = paste(&quot;pval =&quot;, format(cor.test(df$x,df$y)$p.value, digits = 2, scientific = T)))
+abline(lm(y ~x, data = df), col=&quot;red3&quot;, lwd=2)
+
+
+# iterate through different number of bins
+for(n_bins in c(150,50,20)){
+    x_binned &lt;- sapply(1:n_bins, FUN = function(i){  mean(df$x[((i-1)*(n/n_bins)+1):((i)*(n/n_bins))])})
+    y_binned &lt;- sapply(1:n_bins, FUN = function(i){  mean(df$y[((i-1)*(n/n_bins)+1):((i)*(n/n_bins))])})
+    
+    plot(x_binned, y_binned, main = paste(&quot;n bins =&quot;, n_bins), pch=19, col = &quot;#00000055&quot;)
+    legend(&quot;topleft&quot;, legend = paste(&quot;r =&quot;, round(cor(x_binned,y_binned),2)))
+    legend(&quot;topright&quot;, legend = paste(&quot;pval =&quot;, format(cor.test(x_binned,y_binned)$p.value, digits = 2, scientific = T)))
+    abline(lm(y_binned ~ x_binned), col=&quot;red3&quot;, lwd=2)
+}</code></pre>
+<p><img src="rmd_binning_files/figure-html/unnamed-chunk-3-1.png" width="960" style="display: block; margin: auto;" /></p>
+<ul>
+<li>using fewer bins (more data points in one bin) the correlation becomes greater</li>
+<li>p-value changed slightly</li>
+<li>note that axis ranges are different (it makes slopes look also different)</li>
+</ul>
+<hr />
+<pre class="r"><code>par(mfrow=c(2,2), oma=c(2,2,2,2))
+
+# plot without binning
+plot(y ~ x, data = df, main = &quot;no binning&quot;, pch=19, col = &quot;#00000022&quot;, xlim = c(-4,4), ylim = c(-4,4))
+legend(&quot;topleft&quot;, legend = paste(&quot;r =&quot;, round(cor(df$x,df$y),2)))
+legend(&quot;topright&quot;, legend = paste(&quot;pval =&quot;, format(cor.test(df$x,df$y)$p.value, digits = 2, scientific = T)))
+abline(lm(y ~x, data = df), col=&quot;red3&quot;, lwd=2)
+
+
+# iterate through different number of bins
+for(n_bins in c(150,50,20)){
+    x_binned &lt;- sapply(1:n_bins, FUN = function(i){  mean(df$x[((i-1)*(n/n_bins)+1):((i)*(n/n_bins))])})
+    y_binned &lt;- sapply(1:n_bins, FUN = function(i){  mean(df$y[((i-1)*(n/n_bins)+1):((i)*(n/n_bins))])})
+    
+    plot(x_binned, y_binned, main = paste(&quot;n bins =&quot;, n_bins), pch=19, col = &quot;#00000055&quot;, xlim = c(-4,4), ylim = c(-4,4))
+    legend(&quot;topleft&quot;, legend = paste(&quot;r =&quot;, round(cor(x_binned,y_binned),2)))
+    legend(&quot;topright&quot;, legend = paste(&quot;pval =&quot;, format(cor.test(x_binned,y_binned)$p.value, digits = 2, scientific = T)))
+    abline(lm(y_binned ~ x_binned), col=&quot;red3&quot;, lwd=2)
+}</code></pre>
+<p><img src="rmd_binning_files/figure-html/unnamed-chunk-4-1.png" width="960" style="display: block; margin: auto;" /></p>
+<ul>
+<li>slopes are actually similar</li>
 </ul>
 <hr />
 </div>
-<div id="hypothesis-testing" class="section level2">
-<h2>Hypothesis Testing</h2>
+<div id="conclusions" class="section level3">
+<h3>Conclusions</h3>
 <ul>
-<li><a href="rmd_Anova.html">ANOVA - Simulations</a></li>
-<li><a href="rmd_qPCR.html">ANOVA - qPCR Example</a></li>
+<li>binning falsifies weak association to strong!</li>
+<li>one has to be really careful with data binning</li>
 </ul>
 <hr />
 </div>
-<div id="correlation" class="section level2">
-<h2>Correlation</h2>
-<ul>
-<li><a href="rmd_binning.html">Binning and Correlation - Simulations</a></li>
-</ul>
-<hr />
-</div>
-<div id="linear-models" class="section level2">
-<h2>Linear Models</h2>
-<ul>
-<li><a href="rmd_GenMixEffMod.html">Generalized Linear Mixed Effect Models</a></li>
-</ul>
-<hr />
-</div>
-<div id="contact" class="section level2">
-<h2>Contact</h2>
-<p>Tamas Schauer</p>
-<p>LMU, BMC, Bioinformatics Unit</p>
-<p>Email: tamas.schauer [at] med.uni-muenchen.de</p>
+<div id="links" class="section level3">
+<h3>Links</h3>
+<p><a href="https://www.tandfonline.com/doi/abs/10.1080/09332480.2006.10722771" class="uri">https://www.tandfonline.com/doi/abs/10.1080/09332480.2006.10722771</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Ecological_fallacy" class="uri">https://en.wikipedia.org/wiki/Ecological_fallacy</a></p>
+<p><a href="https://stats.stackexchange.com/questions/106016/is-using-deciles-to-find-correlation-a-statistically-valid-approach" class="uri">https://stats.stackexchange.com/questions/106016/is-using-deciles-to-find-correlation-a-statistically-valid-approach</a></p>
+<p><a href="https://statmodeling.stat.columbia.edu/2016/06/17/29400/" class="uri">https://statmodeling.stat.columbia.edu/2016/06/17/29400/</a></p>
 </div>
 
 
