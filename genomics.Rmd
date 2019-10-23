@@ -1,0 +1,22 @@
+---
+title: "Genomics Methods"
+author: by tschauer
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+---
+    
+
+---
+
+## Preface
+
+* The goal of this page is to cover some common genomics methods using next generation sequencing.
+* I will cover ChIP-seq, RNA-seq etc. topics soon
+
+---
+
+## ChIP-seq
+
+* under construction
+* under construction
+
+---

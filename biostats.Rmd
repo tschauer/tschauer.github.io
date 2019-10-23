@@ -1,0 +1,46 @@
+---
+title: "Selected Statistical Methods in Biology"
+author: by tschauer
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+---
+    
+
+---
+
+## Preface
+
+* The goal of this page is to cover some topics of statistical methods for experimental biology. 
+* The methods shown here use the statistical programming language R.
+* Some of the examples include common mistakes/traps
+
+---
+
+## Basics
+
+- [Simple Data Visualization](rmd_SimpleDataViz.html)
+- [Summary Statistics](rmd_SumStats.html)
+
+---
+
+## Hypothesis Testing
+
+- [ANOVA - Simulations](rmd_Anova.html)
+- [ANOVA - qPCR Example](rmd_qPCR.html)
+
+
+---
+
+## Correlation
+
+- [Binning and Correlation - Simulations](rmd_binning.html)
+
+
+---
+
+## Linear Models
+
+- [Generalized Linear Mixed Effect Models](rmd_GenMixEffMod.html)
+
+
+
+---

@@ -1,0 +1,93 @@
+---
+title: "Data Binning and Correlation"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+<style>
+    pre {
+    overflow-x: auto;
+}
+pre code {
+    word-wrap: normal;
+    white-space: pre;
+}
+a {
+    font-size: 16px;
+}
+</style>
+    
+    ```{r global options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
+```
+
+---
+
+* Aim: demonstrate advantages and disadvantages of notched bloxplots
+* ?boxplot help page: if notch is TRUE, a notch is drawn in each side of the boxes. If the notches of two plots do not overlap this is ‘strong evidence’ that the two medians differ (Chambers et al, 1983, p. 62)
+* The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.
+---
+
+### Simulation
+
+* 3 group comparison (x,y,z)
+* normal distribution
+* different means and same standard deviation
+* investigate effect of n
+
+```{r fig.align="center", fig.height=8, fig.width=8}
+library(gridBase)
+library(gridExtra)
+library(grid)
+
+layout(matrix(c(1,1,2,3,3,4,5,5,6), nrow = 3, ncol = 3, byrow = F))
+
+
+ns <- c(10,40,90)
+
+for(i in seq_along(ns)){
+    
+    n <- ns[i]
+    
+    set.seed(123)
+    
+    x <- rnorm(n, 0)
+    y <- rnorm(n, 0.55)
+    z <- rnorm(n, -0.25)
+    
+    dat <- data.frame(outcome = c(x,y,z),
+                      group = rep(c("X","Y","Z"), each = n))
+    
+    
+    boxplot(outcome ~ group, data = dat, 
+            notch = TRUE, ylim = c(-1,1),
+            main = paste("n =", n))
+    
+    rect(xleft = 0, ybottom = median(y)-IQR(y, type = 2)*1.58/sqrt(n), 
+         xright = 4, ytop = median(y)+IQR(y, type = 2)*1.58/sqrt(n), 
+         border = NA, col = "#00000066")
+    
+    # fit anova
+    fit <- aov(outcome ~ group, data = dat)
+    
+    # perform Tukey test
+    tukey_results <- TukeyHSD(fit, ordered = TRUE)$group
+    
+    # formatting
+    tukey_results[,1:3] <- round(tukey_results[,1:3], 2)
+    tukey_results[,4] <- format(tukey_results[,4], digits = 2, scientific = T)
+        
+    # tricks to plot table
+    frame()
+    vps <- baseViewports()
+    pushViewport(vps$inner, vps$figure, vps$plot)
+    grob <-  tableGrob(tukey_results, theme=ttheme_default(base_size = 10))  
+    grid.draw(grob)
+    popViewport(3)
+}
+```
+
+* as expected for a 95% CI the notches decrease with increased n
+* the overlap seems to be quite conservative indicator
+* Tukey test gives clearly signifcant result (n=40, X-Z) but notches overlap

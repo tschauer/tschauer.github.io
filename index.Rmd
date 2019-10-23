@@ -1,5 +1,5 @@
 ---
-title: "A Collection of Statistical Methods in Biology"
+title: "A Collection of Computational Methods in Biology"
 author: by tschauer
 date: '`r format(Sys.time(), "%d %B, %Y")`'
 ---
@@ -9,38 +9,16 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ## Preface
 
-* The goal of this page is to collect statistical methods for experimental biology. From basics to intermediate level. 
-* The methods shown here use the statistical programming language R.
-* Some of the examples include common mistakes/traps
+* This is a collection of computational methods for experimental biology. From basics to intermediate level. 
+* Applied statistical methods
+* Genomics and next generation sequencing
 
 ---
 
-## Basics
+## Pages 
 
-- [Simple Data Visualization](rmd_SimpleDataViz.html)
-- [Summary Statistics](rmd_SumStats.html)
-
----
-
-## Hypothesis Testing
-
-- [ANOVA - Simulations](rmd_Anova.html)
-- [ANOVA - qPCR Example](rmd_qPCR.html)
-
-
----
-
-## Correlation
-
-- [Binning and Correlation - Simulations](rmd_binning.html)
-
-
----
-
-## Linear Models
-
-- [Generalized Linear Mixed Effect Models](rmd_GenMixEffMod.html)
-
+- [BioStats](biostats.html)
+- [Genomics](genomics.html)
 
 
 ---

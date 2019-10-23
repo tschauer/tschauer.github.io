@@ -11,7 +11,7 @@
 
 
 
-<title>Simple Data Visualization</title>
+<title>Data Binning and Correlation</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -302,135 +302,97 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Simple Data Visualization</h1>
+<h1 class="title toc-ignore">Data Binning and Correlation</h1>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#data-types">Data Types</a><ul>
-<li><a href="#continuous">continuous</a></li>
-<li><a href="#discrete">discrete</a></li>
-<li><a href="#categorical">categorical</a></li>
-</ul></li>
-<li><a href="#stripcharts">Stripcharts</a></li>
-<li><a href="#beeswarm">Beeswarm</a></li>
-<li><a href="#histograms">Histograms</a></li>
-<li><a href="#density-plots">Density plots</a></li>
+<li><a href="#simulation">Simulation</a></li>
 </ul>
 </div>
 
+<style>
+    pre {
+    overflow-x: auto;
+}
+pre code {
+    word-wrap: normal;
+    white-space: pre;
+}
+a {
+    font-size: 16px;
+}
+</style>
 <hr />
-<div id="data-types" class="section level1">
-<h1>Data Types</h1>
-<div id="continuous" class="section level3">
-<h3>continuous</h3>
-<pre class="r"><code># blood pressure
-set.seed(111)
-blood_pressure &lt;- rnorm(1000, mean = 120, sd = 10)
-head(blood_pressure)</code></pre>
-<pre><code>## [1] 122.35221 116.69264 116.88376  96.97654 118.29124 121.40278</code></pre>
-</div>
-<div id="discrete" class="section level3">
-<h3>discrete</h3>
-<pre class="r"><code># cell counts in a counting chamber
-set.seed(222)
-cell_counts &lt;- rpois(1000, lambda = 10)
-head(cell_counts)</code></pre>
-<pre><code>## [1] 14  9 14  8 10  9</code></pre>
-</div>
-<div id="categorical" class="section level3">
-<h3>categorical</h3>
-<pre class="r"><code># blood type of person
-set.seed(333)
-blood_type &lt;- factor(sample(c(&quot;A&quot;, &quot;B&quot;, &quot;AB&quot;, &quot;0&quot;), size = 1000, replace = T))
-head(blood_type)</code></pre>
-<pre><code>## [1] B  A  0  AB A  AB
-## Levels: 0 A AB B</code></pre>
-<hr />
-</div>
-</div>
-<div id="stripcharts" class="section level1">
-<h1>Stripcharts</h1>
-<pre class="r"><code>par(mfrow=c(1,2))
+<ul>
+<li>Aim: demonstrate advantages and disadvantages of notched bloxplots</li>
+<li>?boxplot help page: if notch is TRUE, a notch is drawn in each side of the boxes. If the notches of two plots do not overlap this is ‘strong evidence’ that the two medians differ (Chambers et al, 1983, p. 62)</li>
+<li><h2 id="the-notches-if-requested-extend-to--1.58-iqrsqrtn.-this-seems-to-be-based-on-the-same-calculations-as-the-formula-with-1.57-in-chambers-et-al-1983-p.62-given-in-mcgill-et-al-1978-p.16.-they-are-based-on-asymptotic-normality-of-the-median-and-roughly-equal-sample-sizes-for-the-two-medians-being-compared-and-are-said-to-be-rather-insensitive-to-the-underlying-distributions-of-the-samples.-the-idea-appears-to-be-to-give-roughly-a-95-confidence-interval-for-the-difference-in-two-medians.">The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.</h2></li>
+</ul>
+<div id="simulation" class="section level3">
+<h3>Simulation</h3>
+<ul>
+<li>3 group comparison (x,y,z)</li>
+<li>normal distribution</li>
+<li>different means and same standard deviation</li>
+<li>investigate effect of n</li>
+</ul>
+<pre class="r"><code>library(gridBase)
+library(gridExtra)
+library(grid)
 
-# overplot
-stripchart(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;,
-           pch = 19, col = rgb(0,0,0,0.025), cex=0.75, method = &quot;overplot&quot;)
+layout(matrix(c(1,1,2,3,3,4,5,5,6), nrow = 3, ncol = 3, byrow = F))
 
-# jitter
-stripchart(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;,
-           pch = 19, col = rgb(0,0,0,0.1), cex=0.75, method = &quot;jitter&quot;)</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>par(mfrow=c(1,2))
 
-stripchart(cell_counts, xlab = &quot;Cell Counts&quot;,
-           pch = 19, col = rgb(0,0,0,0.025), cex=0.75, method = &quot;overplot&quot;)
+ns &lt;- c(10,40,90)
 
-stripchart(cell_counts, xlab = &quot;Cell Counts&quot;,
-           pch = 19, col = rgb(0,0,0,0.1), cex=0.75, method = &quot;jitter&quot;)</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
-<hr />
-</div>
-<div id="beeswarm" class="section level1">
-<h1>Beeswarm</h1>
-<pre class="r"><code>library(beeswarm)
-
-par(mfrow=c(1,2))
-
-beeswarm(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;,
-         pch = 19, col = rgb(0,0,0,0.1), cex=0.75, vertical = F)
-
-beeswarm(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;,
-         pch = 19, col = rgb(0,0,0,0.1), cex=0.33, vertical = F)</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>par(mfrow=c(1,2))
-
-beeswarm(cell_counts, xlab = &quot;Cell Counts&quot;,
-           pch = 19, col = rgb(0,0,0,0.1), cex=0.75, vertical = F)
-
-beeswarm(cell_counts, xlab = &quot;Cell Counts&quot;,
-           pch = 19, col = rgb(0,0,0,0.1), cex=0.10, vertical = F)</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
-<hr />
-</div>
-<div id="histograms" class="section level1">
-<h1>Histograms</h1>
-<pre class="r"><code>par(mfrow=c(1,3), cex=1.25)
-
-hist(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.1), breaks = 10)
-
-hist(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.1), breaks = 30)
-
-hist(blood_pressure, xlab = &quot;Blood Pressure (mmHg)&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.1), breaks = 50)</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-8-1.png" width="1152" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>par(mfrow=c(1,3), cex=1.25)
-
-hist(cell_counts, xlab = &quot;Cell Counts&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.1), breaks = 10)
-
-hist(cell_counts, xlab = &quot;Cell Counts&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.1), breaks = 20)
-
-hist(cell_counts, xlab = &quot;Cell Counts&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.1), breaks = 50)</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-9-1.png" width="1152" style="display: block; margin: auto;" /></p>
-<hr />
-</div>
-<div id="density-plots" class="section level1">
-<h1>Density plots</h1>
-<pre class="r"><code>par(mfrow=c(1,2))
-
-plot(density(blood_pressure), xlab = &quot;Blood Pressure (mmHg)&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.8))
-
-plot(density(cell_counts), xlab = &quot;Cell Counts&quot;, 
-     main = &quot;&quot;, col = rgb(0,0,0,0.8))</code></pre>
-<p><img src="rmd_SimpleDataViz_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
-<hr />
+for(i in seq_along(ns)){
+    
+    n &lt;- ns[i]
+    
+    set.seed(123)
+    
+    x &lt;- rnorm(n, 0)
+    y &lt;- rnorm(n, 0.55)
+    z &lt;- rnorm(n, -0.25)
+    
+    dat &lt;- data.frame(outcome = c(x,y,z),
+                      group = rep(c(&quot;X&quot;,&quot;Y&quot;,&quot;Z&quot;), each = n))
+    
+    
+    boxplot(outcome ~ group, data = dat, 
+            notch = TRUE, ylim = c(-1,1),
+            main = paste(&quot;n =&quot;, n))
+    
+    rect(xleft = 0, ybottom = median(y)-IQR(y, type = 2)*1.58/sqrt(n), 
+         xright = 4, ytop = median(y)+IQR(y, type = 2)*1.58/sqrt(n), 
+         border = NA, col = &quot;#00000066&quot;)
+    
+    # fit anova
+    fit &lt;- aov(outcome ~ group, data = dat)
+    
+    # perform Tukey test
+    tukey_results &lt;- TukeyHSD(fit, ordered = TRUE)$group
+    
+    # formatting
+    tukey_results[,1:3] &lt;- round(tukey_results[,1:3], 2)
+    tukey_results[,4] &lt;- format(tukey_results[,4], digits = 2, scientific = T)
+        
+    # tricks to plot table
+    frame()
+    vps &lt;- baseViewports()
+    pushViewport(vps$inner, vps$figure, vps$plot)
+    grob &lt;-  tableGrob(tukey_results, theme=ttheme_default(base_size = 10))  
+    grid.draw(grob)
+    popViewport(3)
+}</code></pre>
+<p><img src="rmd_notched_boxplot_files/figure-html/unnamed-chunk-1-1.png" width="768" style="display: block; margin: auto;" /></p>
+<ul>
+<li>as expected for a 95% CI the notches decrease with increased n</li>
+<li>the overlap seems to be quite conservative indicator</li>
+<li>Tukey test gives clearly signifcant result (n=40, X-Z) but notches overlap</li>
+</ul>
 </div>
 
 
