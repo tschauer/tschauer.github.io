@@ -117,7 +117,7 @@ https://en.wikipedia.org/wiki/Mixed_model
 
 * general scheme how to choose fixed and mixed effect models
 
-![Source: http://www.flutterbys.com.au/stats/tut/tut11.7a.html](http://www.flutterbys.com.au/stats/tut/images/tut11.7aDecision.png)
+![Source: http://www.flutterbys.com.au/stats/tut/tut11.2a.html](http://www.flutterbys.com.au/stats/tut/images/tut11.2aDecision.png)
 
 ---
 
@@ -181,9 +181,11 @@ summary(pvals)
 
 ### Detailed Tutorial
 
-Many thanks for this page:
+Many thanks to these pages:
 
-http://www.flutterbys.com.au/stats/tut/tut11.7a.html
+http://www.flutterbys.com.au/stats/tut/tut9.1.html
+
+http://www.flutterbys.com.au/stats/tut/tut11.2a.html
 
 ---
 
