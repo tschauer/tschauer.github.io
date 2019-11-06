@@ -241,7 +241,8 @@ plot(0,0, xlab="", ylab="", xaxt="n", yaxt="n", bty="n", type="n" )
 legend("center", legend = c("Actual", "Theoretical"), 
        horiz = TRUE, pch=19, col= c("red3", "black"), cex=1.25, bty="n")
 ```
-* length = 1 (no distance) means that a single "nucleosome" is sitting in the center
+
+* length = 1 (no distance) means that a single nucleosome is sitting in the center
 * length = 500 suggests a nucleosome on one side only (not be a real NFR?)
 * lower correlation values might give a reasonable length although the pattern is more noisy
 
