@@ -10,7 +10,7 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 ## Preface
 
 * The goal of this page is to cover some common genomics methods using next generation sequencing.
-* I will cover ChIP-seq, RNA-seq etc. topics soon
+* I will cover MNase-seq, RNA-seq, ChIP-seq etc. topics soon
 
 ---
 
