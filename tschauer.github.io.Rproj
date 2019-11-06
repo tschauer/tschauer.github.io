@@ -13,4 +13,4 @@ RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
 BuildType: Website
-WebsitePath: ~/Documents/Research/Projects/Blog/tschauer.github.io
+WebsitePath: /Volumes/PromisePegasus/GitHubPages/tschauer.github.io

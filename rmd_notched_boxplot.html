@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -84,7 +85,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -245,18 +245,6 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
@@ -328,8 +316,9 @@ a {
 <ul>
 <li>Aim: demonstrate advantages and disadvantages of notched bloxplots</li>
 <li>?boxplot help page: if notch is TRUE, a notch is drawn in each side of the boxes. If the notches of two plots do not overlap this is ‘strong evidence’ that the two medians differ (Chambers et al, 1983, p. 62)</li>
-<li><h2 id="the-notches-if-requested-extend-to--1.58-iqrsqrtn.-this-seems-to-be-based-on-the-same-calculations-as-the-formula-with-1.57-in-chambers-et-al-1983-p.62-given-in-mcgill-et-al-1978-p.16.-they-are-based-on-asymptotic-normality-of-the-median-and-roughly-equal-sample-sizes-for-the-two-medians-being-compared-and-are-said-to-be-rather-insensitive-to-the-underlying-distributions-of-the-samples.-the-idea-appears-to-be-to-give-roughly-a-95-confidence-interval-for-the-difference-in-two-medians.">The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.</h2></li>
+<li>The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.</li>
 </ul>
+<hr />
 <div id="simulation" class="section level3">
 <h3>Simulation</h3>
 <ul>
@@ -393,6 +382,8 @@ for(i in seq_along(ns)){
 <li>the overlap seems to be quite conservative indicator</li>
 <li>Tukey test gives clearly signifcant result (n=40, X-Z) but notches overlap</li>
 </ul>
+<hr />
+<p>… to be continued …</p>
 </div>
 
 
@@ -412,6 +403,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

@@ -22,6 +22,12 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ---
 
+## Confidence Intervals
+
+- [Notched Boxplots - Simulations](rrmd_notched_boxplot.html)
+
+---
+
 ## Hypothesis Testing
 
 - [ANOVA - Simulations](rmd_Anova.html)

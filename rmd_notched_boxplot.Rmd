@@ -27,6 +27,7 @@ knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
 * Aim: demonstrate advantages and disadvantages of notched bloxplots
 * ?boxplot help page: if notch is TRUE, a notch is drawn in each side of the boxes. If the notches of two plots do not overlap this is ‘strong evidence’ that the two medians differ (Chambers et al, 1983, p. 62)
 * The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.
+
 ---
 
 ### Simulation
@@ -91,3 +92,9 @@ for(i in seq_along(ns)){
 * as expected for a 95% CI the notches decrease with increased n
 * the overlap seems to be quite conservative indicator
 * Tukey test gives clearly signifcant result (n=40, X-Z) but notches overlap
+
+
+---
+
+
+... to be continued ...
