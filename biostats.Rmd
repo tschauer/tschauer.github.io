@@ -24,7 +24,7 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ## Confidence Intervals
 
-- [Notched Boxplots - Simulations](rrmd_notched_boxplot.html)
+- [Notched Boxplots - Simulations](rmd_notched_boxplot.html)
 
 ---
 
