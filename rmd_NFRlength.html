@@ -416,16 +416,10 @@ calcNFRlength &lt;- function(my_mat,
 <li>in vivo MNase-seq from yeast (S.cerevisae)</li>
 <li>centered at TF sites</li>
 </ul>
-<pre class="r"><code># load and filter matrix
-
+<pre class="r"><code># load TF centered matrix
 load(&quot;data_NFRlength/smooth.mat.TF.yeast.invivo.MNase.rda&quot;)
 
-# filter data
-my_mat &lt;- my_mat[complete.cases(my_mat),]
-my_filter &lt;- apply(my_mat, 1, function(x){  sum(x &gt; 1e-10) &gt; (length(x)/2) })
-my_mat &lt;- my_mat[my_filter,]
-
-# read NFR data
+# read NFR data (pre-calcultaed)
 df &lt;- read.table(&quot;data_NFRlength/NFRlength.TF.yeast.invivo.MNase.txt&quot;, row.names = 1, header = T)</code></pre>
 <pre class="r"><code># use +/- 200 bp from the center
 beforeRef &lt;- 200 
@@ -453,8 +447,6 @@ head(df)</code></pre>
 <div id="heatmap-visualization" class="section level4">
 <h4>Heatmap Visualization</h4>
 <pre class="r"><code># heatmap  ordered by NFR length
-
-
 library(RColorBrewer)
 
 par(mfrow=c(1,1), oma=c(2,0,0,0))
@@ -480,7 +472,6 @@ axis(side = 2, at = 0.5, labels = &quot;sorted by NFR length&quot;, tick = F)</c
 <div id="exploring-the-values" class="section level4">
 <h4>Exploring the Values</h4>
 <pre class="r"><code># check distributions
-
 par(mfrow=c(1,3), oma=c(2,0,0,0))
 
 hist(df[,1], breaks = 500, main = &quot;NFR correlation&quot;, xlab=&quot;&quot;)
@@ -501,7 +492,6 @@ examples &lt;- c(which(df[,2] &gt; 0   &amp; df[,2] &lt;= 1 &amp; df[,1] &gt; 0.
               which(df[,2] &gt; 165 &amp; df[,2] &lt;= 170 &amp; df[,1] &lt; 0.7)[1],
               which(df[,2] &gt; 295 &amp; df[,2] &lt;= 305 &amp; df[,1] &lt; 0.7)[1],
               which(df[,2] &gt; 499 &amp; df[,2] &lt;= 500 &amp; df[,1] &lt; 0.6)[1])
-
 
 par(mfrow=c(2,4), oma=c(0,0,2,0))
 
