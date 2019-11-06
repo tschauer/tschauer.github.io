@@ -14,9 +14,23 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ---
 
+## MNase-seq
+
+- [Determining NFR length by cross-correlation](rmd_NFRlength.html)
+
+
+---
+
+## RNA-seq
+
+* DESeq2
+* under construction
+
+---
+
 ## ChIP-seq
 
-* under construction
+* csaw?
 * under construction
 
 ---
