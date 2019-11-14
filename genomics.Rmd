@@ -16,7 +16,7 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ## MNase-seq
 
-- [Determining NFR length by cross-correlation](rmd_NFRlength.html)
+- [Determining NFR width by cross-correlation](rmd_NFRlength.html)
 
 
 ---

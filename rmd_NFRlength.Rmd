@@ -1,5 +1,5 @@
 ---
-title: "Determining NFR length by cross-correlation"
+title: "Determining NFR width by cross-correlation"
 output: 
     html_document:
         toc: TRUE
@@ -23,18 +23,20 @@ knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
 
 * dyad coverages are centered at different kind of sites
     + transcription factor (TF) motif (PWM) positions
-    + transcription start sites etc. 
-* goal is to estimate the distance between the flanking nucleomes
-* aka NFR (nucleosome "free" region) length
+    + transcription start sites (TSS)
+    + TSS +1 nucleosome
+* goal is to estimate the distance between flanking nucleomes surrounding the center
+* this can be called NFR (nucleosome "free" region) width
+* (side note: one could subtract 147 bp (1 nucleosome) from this width)
 
 ---
 
 
 ## Method Description
 
-* the method is inspired by Ocampo et al. 2016 NAR
-* 2 Gaussian distributions mimic 2 flanking nucleosomes with known distance (theoretical pattern)
-* for each site the MNase signal is compared to the theoretical pattern (by cross-correlation)
+* the method is inspired by Ocampo et al. 2016 and Chereji et al. 2018
+* 2 Gaussian distributions mimic 2 flanking nucleosomes with known distance between them (theoretical pattern)
+* for each site, the nucleosome signal is compared to the theoretical pattern (by cross-correlation)
 * the actual distance for the given site is selected by maximizing the cross-correlation
 
 ---
@@ -42,40 +44,39 @@ knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
 ```{r}
 ### helper functions ###
 
-
+# generate Gaussian distribution
 gaussmf <- function (x, sigma, mean) {
       height <- 1
       mfVals = (height * exp(-(((x - mean)^2)/(2 * (sigma^2)))))
       mfVals
 }
 
-
+# create NFR-like pattern
 makeNFR <- function(d, beforeRef, afterRef){
       
       apply(sapply(c(-0.5,0.5), function(x) {gaussmf(seq(-beforeRef, afterRef), 40, x * d)}), 1, sum)
       
 }
 
-
-
-scaler <- function(x){
-      (x - min(x)) / (max(x)-min(x))
+# scale between minimum and maximum
+scaler <- function(x, probs = c(0.01,0.99)){
+      (x - quantile(x, probs[1])) / (quantile(x, probs[2])-quantile(x, probs[1]))
 }
-
 
 
 ### main function ###
 
-calcNFRlength <- function(my_mat,    
+# iterate through each row of the matrix
+# use ccf function to find maximum correlation
+# pick d which corresponds to the maximum correlation
+
+calcNFRwidth <- function(my_mat,    
                           beforeRef = 200,
                           afterRef =  200,
                           mc.cores = 16){
+
     
-    
-    my_mat <- my_mat[complete.cases(my_mat),]
-    my_filter <- apply(my_mat, 1, function(x){  sum(x > 1e-10) > (length(x)/2) })
-    my_mat <- my_mat[my_filter,]
-    
+    # here before and after is not necessarily symmetric (e.g. if matrix is not centered at NFR)
     my_mat_sub <- my_mat[, (ceiling(ncol(my_mat)/2)-beforeRef):(ceiling(ncol(my_mat)/2)+afterRef-1)]
     
     
@@ -87,11 +88,14 @@ calcNFRlength <- function(my_mat,
         spacingV <- NA
         shiftV <- NA
         
+        total_width <- beforeRef+afterRef
+        
         if(round(sd(rx), 3) != 0 & sum(is.na(rx)) == 0){
             
-            for (d in 1:500) {
+            for (d in 1:(total_width+100)) {
                 
-                y <-  makeNFR(d = d, beforeRef = beforeRef, afterRef = afterRef)
+                # here before and after should be symmetric (left and right to center)
+                y <-  makeNFR(d = d, beforeRef = total_width/2, afterRef = total_width/2)
                 
                 my_ccf <- ccf(rx,y, lag.max = 50, plot=FALSE)
                 
@@ -108,10 +112,9 @@ calcNFRlength <- function(my_mat,
         }
         
         
-        c(r = round(bestR, 2), space = spacingV, shift = shiftV)
+        c(r = round(bestR, 2), width = spacingV, shift = shiftV)
         
     })                         
-    
     
     df <- t(as.data.frame(res))
     rownames(df) <- rownames(my_mat_sub)
@@ -121,20 +124,87 @@ calcNFRlength <- function(my_mat,
 
 ```
 
+
+
+```{r echo=F}
+### plotting functions
+# not shown in doc
+library(EBImage)
+
+plotHeatmap <- function(mat,
+                        df,
+                        plot_title,
+                        min_value = 0,
+                        max_value = 0.6){
+    
+    mat_hm <- scaler(mat)
+    
+    mat_hm[mat_hm < min_value ] <- min_value
+    mat_hm[mat_hm > max_value ] <- max_value
+    
+    my_order <- order(df[,2], decreasing = T)
+    
+    image(t(mat_hm[rev(my_order),]), 
+          main = plot_title,
+          col = colorRampPalette(rev(brewer.pal(n = 9, name ="RdYlBu")))(100),
+          breaks = seq(min(mat_hm), max(mat_hm), length.out = 101),
+          xaxt="n", yaxt="n", 
+          useRaster = T)
+    
+    axis(side = 2, at = 0.5, labels = "NFR width", tick = F)
+    
+    axis(side = 1, at = seq(0,1, length.out = 5), 
+         labels =  seq(-round(ncol(mat_hm)/2000), round(ncol(mat_hm)/2000), length.out = 5 )*1000)
+    axis(side = 4, at =  seq(0,1,0.1), labels = round(quantile(df[,2], na.rm = T, probs = seq(0,1,0.1))), las=2, cex.axis=0.8)
+}
+
+
+plotExamples <- function(examples){
+    
+    total_width <- beforeRef+afterRef
+
+    for(i in seq_along(examples)){
+    
+    sidx <- examples[i]
+    
+    if(is.na(sidx)){next()}
+    
+    my_pattern <- makeNFR(d = df[sidx,2], beforeRef = total_width/2, afterRef = total_width/2)
+    
+    plot(df[sidx,3]:(length(my_pattern)+df[sidx,3]-1), my_pattern, type="l", xlab = "", xaxt ="n", ylab="Density", main = "")
+    axis(side = 1, at = seq(df[sidx,3],(length(my_pattern)+df[sidx,3]-1), 100), labels = seq(-(total_width/2), (total_width/2), 100))
+    
+    mtext(paste("corr =", df[sidx,1],"width =", df[sidx,2], "shift =", df[sidx,3]), side = 3, line = 1, cex = 0.8)
+    
+    lines(scaler(my_mat[sidx,(ceiling(ncol(my_mat)/2)-beforeRef):(ceiling(ncol(my_mat)/2)+afterRef-1)]), col="red3")
+    
+    if(i %% 8 == 0){
+        mtext(text = "Examples", side = 3, outer = T, font = 2)
+        
+        par(fig = c(0,1,0,1), mar=c(0,0,0,0), new = TRUE)
+        plot(0,0, xlab="", ylab="", xaxt="n", yaxt="n", bty="n", type="n" )
+        legend("center", legend = c("Actual", "Theoretical"), 
+               horiz = TRUE, pch=19, col= c("red3", "black"), cex=1.25, bty="n")
+    }    
+    
+}
+}
+
+```
+
+
 ---
 
-## Yeast Data
+## Budding Yeast Data #1
 
 * in vivo MNase-seq from yeast (S.cerevisae)
-* centered at TF sites 
+* centered at putative TF sites (based on PWM)
+* single end data: all fragments are considered
+
 
 ```{r}
-# load TF centered matrix
-load("data_NFRlength/smooth.mat.TF.yeast.invivo.MNase.rda")
-
-# read NFR data (pre-calcultaed)
-df <- read.table("data_NFRlength/NFRlength.TF.yeast.invivo.MNase.txt", row.names = 1, header = T)
-
+# load site centered matrix
+load("data_NFRwidth/smooth.mat.TF.yeast.invivo.MNase.rda")
 ```
 
 
@@ -142,49 +212,46 @@ df <- read.table("data_NFRlength/NFRlength.TF.yeast.invivo.MNase.txt", row.names
 ```{r}
 # use +/- 200 bp from the center
 beforeRef <- 200 
-afterRef <- 200
+afterRef  <- 200
 ```
 
 
 ```{r}
-# do not run here - takes some minutes
+file_path <- paste0("data_NFRwidth/NFRwidth.TF.yeast.invivo.MNase.set",beforeRef,"_",afterRef,".txt")
 
-# df <- calcNFRlength(my_mat = my_mat, 
-#                     beforeRef = beforeRef, 
-#                     afterRef = afterRef)
+if(file.exists(file_path)){
+    
+    #read NFR data (pre-calculated)
+    df <- read.table(file_path, row.names = 1, header = T)
+    
+} else {
+    
+    # run analysis
+    df <- calcNFRwidth(my_mat = my_mat,
+                    beforeRef = beforeRef,
+                    afterRef = afterRef)
+    
+    write.table(df, file = file_path, sep = "\t", row.names = T, col.names = NA)
+}
 
 head(df)
 ```
 
-* the greater the correlation is the more similar is the actual pattern to the theoratical
-* length indicates the NFR length
+* the greater the correlation the more similar is the actual pattern to the theoretical
+* width indicates the NFR width
 * shift indicates how far the signal had to be shifted from the center to get the max correlation
 
 ---
 
 #### Heatmap Visualization
 
-```{r fig.align="center", fig.height=8, fig.width=4}
-# heatmap  ordered by NFR length
+```{r fig.align="center", fig.height=6, fig.width=4}
+# heatmap  ordered by NFR width
 library(RColorBrewer)
 
-par(mfrow=c(1,1), oma=c(2,0,0,0))
+par(mfrow=c(1,1), oma=c(2,0,0,1))
 
-my_mat_hm <- my_mat
-my_mat_hm[my_mat_hm > 2e-3 ] <- 2e-3
-
-my_order <- order(df[,2], decreasing = T)
-
-image(t(my_mat_hm[rev(my_order),]), 
-      main = "Nucleosomes centered at TF",
-      col = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),
-      breaks = seq(min(my_mat_hm), max(my_mat_hm), length.out = 101),
-      xaxt="n", yaxt="n", 
-      useRaster = T)
-
-axis(side = 1, at = seq(0,1, length.out = length(seq(-beforeRef, afterRef, 100))), 
-     labels = seq(-beforeRef, afterRef, 100))
-axis(side = 2, at = 0.5, labels = "sorted by NFR length", tick = F)
+plotHeatmap(mat = my_mat, df = df, plot_title = "Nucleosomes centered at TF")
 ```
 
 
@@ -198,7 +265,7 @@ axis(side = 2, at = 0.5, labels = "sorted by NFR length", tick = F)
 par(mfrow=c(1,3), oma=c(2,0,0,0))
 
 hist(df[,1], breaks = 500, main = "NFR correlation", xlab="")
-hist(df[,2], breaks = 250, main = "NFR length", xlab="")
+hist(df[,2], breaks = 250, main = "NFR width", xlab="")
 hist(df[,3], breaks = 500, main = "NFR shift", xlab="")
 ```
 
@@ -221,28 +288,197 @@ examples <- c(which(df[,2] > 0   & df[,2] <= 1 & df[,1] > 0.9)[1],
 
 par(mfrow=c(2,4), oma=c(0,0,2,0))
 
-for(sidx in examples){
-    
-    my_pattern <- makeNFR(d = df[sidx,2], beforeRef = beforeRef, afterRef = afterRef)
-    
-    plot(df[sidx,3]:(length(my_pattern)+df[sidx,3]-1), my_pattern, type="l", xlab = "", xaxt ="n", ylab="Density", main = "")
-    axis(side = 1, at = seq(df[sidx,3],(length(my_pattern)+df[sidx,3]-1), 100), labels = seq(-beforeRef, afterRef, 100))
-    
-    mtext(paste("corr =", df[sidx,1],"length =", df[sidx,2], "shift =", df[sidx,3]), side = 3, line = 1, cex = 0.8)
-    
-    lines(scaler(my_mat[sidx,(ceiling(ncol(my_mat)/2)-beforeRef):(ceiling(ncol(my_mat)/2)+afterRef-1)]), col="red3")
-    
-}
-
-mtext(text = "Examples", side = 3, outer = T, font = 2)
-
-par(fig = c(0,1,0,1), mar=c(0,0,0,0), new = TRUE)
-plot(0,0, xlab="", ylab="", xaxt="n", yaxt="n", bty="n", type="n" )
-legend("center", legend = c("Actual", "Theoretical"), 
-       horiz = TRUE, pch=19, col= c("red3", "black"), cex=1.25, bty="n")
+plotExamples(examples = examples)
 ```
 
-* length = 1 (no distance) means that a single nucleosome is sitting in the center
-* length = 500 suggests a nucleosome on one side only (not be a real NFR?)
-* lower correlation values might give a reasonable length although the pattern is more noisy
+* width = 1 (no distance) means that a single nucleosome is sitting at the center
+* width = 500 suggests a nucleosome is at one side only (not a real NFR?)
+* lower correlation values might give a reasonable width although the pattern is more noisy
 
+
+
+
+---
+
+## Budding Yeast Data #2
+
+* in vivo MNase-seq from yeast (S.cerevisae)
+* paired end data: mono-nuclesomal fragments are selected
+* centered at TSS +1 nucleosome (which was determined previously by Chereji et al. 2018)
+* this creates a problem that the matrix is not centered at the NFR
+* (Side note: I could have used the NFR center positions from Chereji et al.)
+* (Side note2: Chereji et al. also use a similar method where they first map the +1 and -1 nucleosomes)
+* one goal is here to test different window sizes left and right
+
+
+```{r}
+# load site centered matrix
+load("data_NFRwidth/smooth.mat.plusOne.yeast.invivo.MNase.rda")
+```
+
+
+```{r}
+# settings are different window sizes
+# windows are asymmetric as the signal is centered at the +1 nucleosome
+settings <- list(c(450,50),
+                 c(400,50),
+                 c(350,50),
+                 c(300,50))
+
+for(i in seq_along(settings)){
+    
+    beforeRef <- settings[[i]][1] 
+    afterRef  <- settings[[i]][2] 
+        
+    file_path <- paste0("data_NFRwidth/NFRwidth.plusOne.yeast.invivo.PE.MNase.set",beforeRef,"_",afterRef,".txt")
+
+    if(file.exists(file_path)){
+        
+        #read NFR data (pre-calculated)
+        df <- read.table(file_path, row.names = 1, header = T)
+        
+        assign(paste0("df",i), df)
+        
+    } else {
+        # run analysis
+        df <- calcNFRwidth(my_mat = my_mat,
+                            beforeRef = beforeRef,
+                            afterRef = afterRef)
+        write.table(df, file = file_path, sep = "\t", row.names = T, col.names = NA)
+
+        assign(paste0("df",i), df)
+    }
+}
+```
+
+---
+
+#### Heatmap Visualization
+
+```{r fig.align="center", fig.height=6, fig.width=12}
+# heatmap  ordered by NFR width
+library(RColorBrewer)
+
+par(mfrow=c(1,4), oma=c(1,0,1,1))
+
+# iterate through settings
+for(i in seq_along(settings)){
+    
+    plotHeatmap(mat = my_mat, df = get(paste0("df",i)), 
+            plot_title = paste0("beforeRef = ",settings[[i]][1],"; afterRef =",settings[[i]][2]))
+}
+
+title(main = "Nucleosomes centered at TSS+1 nucleosome", outer = TRUE)
+```
+
+* 1st settings do not capture -1 properly (there is a small nuclesome in between)
+* 3rd settings look the most reasonable
+
+---
+
+#### Exploring the Values
+
+```{r fig.align="center", fig.height=4, fig.width=10}
+# check distributions
+par(mfrow=c(1,3), oma=c(2,0,0,0))
+
+df <- df3
+beforeRef = 350; afterRef = 50
+
+hist(df[,1], breaks = 500, main = "NFR correlation", xlab="")
+hist(df[,2], breaks = 250, main = "NFR width", xlab="")
+hist(df[,3], breaks = 500, main = "NFR shift", xlab="")
+```
+
+* there is a shoulder at 400 (probably because window size is limited?)
+
+---
+
+#### Example Sites
+
+```{r fig.align="center", fig.height=6, fig.width=10}
+# choose examples by interesting values
+
+examples <- c(which(df[,2] > 0   & df[,2] <= 1 & df[,1] > 0.8)[1],
+              which(df[,2] > 150 & df[,2] <= 170 & df[,1] > 0.8)[1],
+              which(df[,2] > 295 & df[,2] <= 305 & df[,1] > 0.9)[1],
+              which(df[,2] > 499 & df[,2] <= 500 & df[,1] > 0.6)[2],
+              which(df[,2] > 0   & df[,2] <= 1 & df[,1] < 0.7)[1],
+              which(df[,2] > 165 & df[,2] <= 170 & df[,1] < 0.7)[1],
+              which(df[,2] > 295 & df[,2] <= 305 & df[,1] < 0.7)[1],
+              which(df[,2] > 499 & df[,2] <= 500 & df[,1] < 0.6)[1])
+
+par(mfrow=c(2,4), oma=c(0,0,2,0))
+
+plotExamples(examples = examples)
+```
+
+* the profiles with high correlation look reasonable
+* the limit at 400 is visible here as well
+
+---
+
+## Compare to Chereji etal. data
+
+* Chereji et al. used a different method
+* they first determine -1 and +1 nucleomes positions
+* they use cross-correlation to refine those positions
+* they detemine NFR width (NDR width) as the distance between -1 and +1 
+* they substract 147 bp (1 nucleosome)
+
+```{r fig.align="center", fig.height=6, fig.width=6}
+# read published data
+NFR <- read.table("data_NFRwidth/13059_2018_1398_MOESM2_ESM.txt", sep = "\t", header = T, stringsAsFactors = F)
+
+library(LSD)
+par(mfrow=c(1,1), oma=c(2,2,0,2))
+
+
+# merge datasets
+df_NFR <- merge(df, NFR, by.x = "row.names", by.y = "ORF")
+
+# add 147 for comparison
+heatscatter(df_NFR$width, df_NFR$NDR.Width+147,
+            xlab = "cross-correlation method", ylab = "Chereji method",
+            main = "Comparison", pch=19, cex=0.6,
+            xlim = c(100,600), ylim = c(100,600))
+
+```
+
+* there is a good match for NFRs between 200-400
+
+---
+
+#### Heatmap Visualization
+
+```{r fig.align="center", fig.height=6, fig.width=6}
+# heatmap  ordered by NFR width
+par(mfrow=c(1,2), oma=c(1,0,1,1))
+
+my_mat <- my_mat[rownames(my_mat) %in% df_NFR$Row.names,]
+my_mat <- my_mat[order(rownames(my_mat)),]
+
+identical(as.character(df_NFR$Row.names), rownames(my_mat))
+
+df <- df_NFR[,c(2,3,4)]
+rownames(df) <- df_NFR$Row.names
+
+plotHeatmap(mat = my_mat, df = df, plot_title = "cross-correlation method")
+
+
+df <- df_NFR[,c(2,14,4)]
+rownames(df) <- df_NFR$Row.names
+
+plotHeatmap(mat = my_mat, df = df, plot_title = "Henikoff method")
+
+title(main = "Nucleosomes centered at TSS+1 nucleosome", line = -0.5, outer = TRUE)
+```
+
+Conclusions:
+
+* NFR width up to the window limit matches published results
+* longer NFRs are not captured well with this method
+* using larger window sizes is not an option (small nucleosome appears in the middle)
+
+* the method can be still useful in the first example when centered at TF motif
+* in this case the nucleosome might be exactly at the TF center (which results in a width=1)
