@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>K-Means Clustering - Female/Male Embryos</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="biostats.html">BioStats</a>
+</li>
+<li>
+  <a href="genomics.html">Genomics</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">K-Means Clustering - Female/Male Embryos</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#embryo-rna-seq-data">Embryo RNA-seq Data</a><ul>
+<li><a href="#pre-processing">Pre-processing</a></li>
+<li><a href="#annotation">Annotation</a></li>
+<li><a href="#count-table">Count Table</a></li>
+<li><a href="#filtering-and-normalization">Filtering and Normalization</a></li>
+</ul></li>
+<li><a href="#k-means-clustering">K-means Clustering</a><ul>
+<li><a href="#clustering-with-k3">Clustering with k=3</a></li>
+<li><a href="#plot-marker-genes">Plot Marker Genes</a></li>
+</ul></li>
+<li><a href="#data-source">Data Source</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<style>
+a {
+  font-size: 16px;
+}
+</style>
+<hr />
+<div id="embryo-rna-seq-data" class="section level2">
+<h2>Embryo RNA-seq Data</h2>
+<ul>
+<li>time course experiment of individual Drosophila embryos</li>
+<li>the time spans up to 12 hours in development</li>
+<li>during this time key sex determination genes get activated</li>
+<li>goal: distinguish which embryo is female or male</li>
+</ul>
+<hr />
+<div id="pre-processing" class="section level3">
+<h3>Pre-processing</h3>
+<ul>
+<li>alignment and count table was generated using STAR</li>
+</ul>
+<pre class="bash"><code># do not run here
+module load ngs/STAR/2.5.3a
+module load ngs/samtools
+
+### STAR index directory ###
+STAR_INDEX=&quot;../genome/STAR_dmel-all-chromosome-r6.17&quot;
+
+### GTF file ###
+GTF_FILE=&quot;../genome/dmel-all-r6.17.gtf&quot;
+
+# STAR run
+STAR \
+--runThreadN 8 \
+--readFilesCommand gunzip -c \
+--quantMode GeneCounts \
+--genomeDir ${STAR_INDEX} \
+--sjdbGTFfile ${GTF_FILE} \
+--readFilesIn ${FILEBASE}_1.txt.gz ${FILEBASE}_2.txt.gz \
+--outFileNamePrefix ${FILEBASE}. \
+--outSAMtype BAM SortedByCoordinate \
+--limitBAMsortRAM 5000000000 \
+--outFilterMultimapNmax 1</code></pre>
+</div>
+<div id="annotation" class="section level3">
+<h3>Annotation</h3>
+<ul>
+<li>annotation is derived from the same GTF (loaded as txdb)</li>
+</ul>
+<pre class="r"><code>library(AnnotationDbi)
+library(GenomicFeatures)
+
+txdb = loadDb(&quot;data_Kmeans/txdb&quot;)
+
+my_exons &lt;- exons(txdb)
+
+exons.list.per.gene &lt;- exonsBy(txdb, by=&quot;gene&quot;)
+exonic.gene.sizes &lt;- sum(width(reduce(exons.list.per.gene))) / 1000
+
+head(exonic.gene.sizes)</code></pre>
+<pre><code>## FBgn0000003 FBgn0000008 FBgn0000014 FBgn0000015 FBgn0000017 FBgn0000018 
+##       0.299       5.414       5.477      11.791      12.819       1.794</code></pre>
+</div>
+<div id="count-table" class="section level3">
+<h3>Count Table</h3>
+<pre class="r"><code># read data from text file
+my_counts &lt;- read.table(&quot;data_Kmeans/count_table.txt&quot;, header = T, row.names = 1)
+
+my_counts[1:6,1:8]</code></pre>
+<pre><code>##              E1B  E1C  E1D  E1G  E1H  E2B  E2C  E2D
+## FBgn0000003   76   15   23   23   12   68   22   14
+## FBgn0000008 1395  676  875  699  439   34   23   19
+## FBgn0000014    1    0    0    0    1   88   34   47
+## FBgn0000015    0    0    0    0    2   19   19   11
+## FBgn0000017 4222 2186 2614 2784 1523 2850 1718 2083
+## FBgn0000018  908  364  515  278  253   36   15   19</code></pre>
+<pre class="r"><code>dim(my_counts)</code></pre>
+<pre><code>## [1] 17485    54</code></pre>
+<hr />
+</div>
+<div id="filtering-and-normalization" class="section level3">
+<h3>Filtering and Normalization</h3>
+<ul>
+<li>TPM normalization makes sure that samples and genes are comparable
+<ul>
+<li>first normalize by exonic gene length</li>
+<li>second normalize by the sum of length corrected counts</li>
+</ul></li>
+</ul>
+<pre class="r"><code># function to calculate TPM (see reference below)
+countToTpm &lt;- function(counts, effLen, scaler=1e6)
+{
+      rate &lt;- log(counts) - log(effLen)
+      denom &lt;- log(sum(exp(rate)))
+      exp(rate - denom + log(scaler))
+}</code></pre>
+<pre class="r"><code># select genes
+my_counts_Genes &lt;- my_counts[grep(&quot;FBgn&quot;, rownames(my_counts)),]
+
+# filter low counts
+my_filter &lt;- apply(my_counts_Genes, 1, function(x) length(x[x&gt;20]) &gt;= ncol(my_counts_Genes)/12)
+
+my_counts_Filtered &lt;- my_counts_Genes[my_filter,]
+
+# match filtered genes and exonic gene sizes
+my_genes_Filtered &lt;- intersect(rownames(my_counts_Filtered), names(exonic.gene.sizes))
+
+exonic.gene.sizes &lt;- exonic.gene.sizes[names(exonic.gene.sizes) %in% my_genes_Filtered]
+exonic.gene.sizes &lt;- exonic.gene.sizes[order(names(exonic.gene.sizes))]
+
+my_counts_Filtered &lt;- my_counts_Filtered[rownames(my_counts_Filtered) %in% my_genes_Filtered,]
+my_counts_Filtered &lt;- my_counts_Filtered[order(rownames(my_counts_Filtered)),]
+
+# check whether names are identical
+stopifnot(identical(rownames(my_counts_Filtered), names(exonic.gene.sizes)))
+
+# calculate TPM
+my_TPM &lt;- apply(my_counts_Filtered, 2, FUN = function(x){countToTpm(x, exonic.gene.sizes)})
+
+# take log
+log2_TPM &lt;- log2(my_TPM+0.5)
+
+log2_TPM[1:6,1:6]</code></pre>
+<pre><code>##                    E1B       E1C       E1D       E1G        E1H        E2B
+## FBgn0000003  5.4913503  4.296149  4.656480  4.753028  4.3757731 6.23310042
+## FBgn0000008  5.5107778  5.589526  5.712513  5.489284  5.3727542 1.35804085
+## FBgn0000014 -0.9106273 -1.000000 -1.000000 -1.000000 -0.7559121 2.53083317
+## FBgn0000015 -1.0000000 -1.000000 -1.000000 -1.000000 -0.7719412 0.04186372
+## FBgn0000017  5.8614745  6.035190  6.045044  6.233035  5.9183222 6.20060925
+## FBgn0000018  6.4770042  6.284183  6.535293  5.749910  6.1637671 2.82643640</code></pre>
+<pre class="r"><code>dim(log2_TPM)</code></pre>
+<pre><code>## [1] 8983   54</code></pre>
+<hr />
+</div>
+</div>
+<div id="k-means-clustering" class="section level1">
+<h1>K-means Clustering</h1>
+<div id="clustering-with-k3" class="section level3">
+<h3>Clustering with k=3</h3>
+<ul>
+<li>first embryo is before sex determination is initiated</li>
+<li>that´s why we set k = 3 (early, female and male)</li>
+</ul>
+<pre class="r"><code>library(org.Dm.eg.db)
+
+# select well known sex-specific marker genes
+my_favorite_genes &lt;- c(&quot;Sxl&quot;, &quot;msl-2&quot; ,&quot;lncRNA:roX1&quot;, &quot;lncRNA:roX2&quot;)
+names(my_favorite_genes) &lt;- mapIds(org.Dm.eg.db, my_favorite_genes, &quot;FLYBASE&quot;, keytype=&quot;SYMBOL&quot;, multiVals=&quot;first&quot;)
+
+set.seed(99)
+
+# k-means with k=3
+kmeans_clusters &lt;- kmeans(apply(log2_TPM[ rownames(log2_TPM) %in% names(my_favorite_genes), ], 1, 
+                         function(x){ (x-mean(x))/sd(x) }),3, nstart=25, iter.max=1000)
+
+my_sexes &lt;- factor(as.integer(kmeans_clusters$cluster))
+
+head(my_sexes)</code></pre>
+<pre><code>## [1] 1 1 1 1 1 2
+## Levels: 1 2 3</code></pre>
+</div>
+<div id="plot-marker-genes" class="section level3">
+<h3>Plot Marker Genes</h3>
+<ul>
+<li>plot TPM values to see sex-specific pattern</li>
+</ul>
+<pre class="r"><code># conditions
+my_conditions &lt;- factor(substr(colnames(log2_TPM),1,2))
+
+# setup color
+my_color_palette &lt;- c(&quot;#999999&quot;, &quot;#d6604d&quot;, &quot;#4393c3&quot;)
+
+par(mfrow=c(1,4), oma=c(4,2,0,2))
+
+# iterate through marker genes
+for(i in seq_along(my_favorite_genes)){
+    
+    plotDots(log2_TPM[rownames(log2_TPM) == names(my_favorite_genes)[i],], 
+                     my_title = my_favorite_genes[i], 
+                     color_palette = my_color_palette, 
+                     color_groups = my_sexes, 
+                     conditions = my_conditions, 
+                     point_size = 0.8)
+}
+
+mtext(text = &quot;Stages&quot;, side = 1, line = -2, outer = TRUE)
+mtext(text = &quot;log2 TPM&quot;, side = 2, outer = TRUE)
+
+par(fig = c(0,1,0,1), mar=c(0,0,0,0), new = TRUE)
+plot(0,0, xlab=&quot;&quot;, ylab=&quot;&quot;, xaxt=&quot;n&quot;, yaxt=&quot;n&quot;, bty=&quot;n&quot;, type=&quot;n&quot; )
+legend(&quot;bottomright&quot;, legend = c(&quot;Early&quot;, &quot;Female&quot;, &quot;Male&quot;), pch = 19, col = my_color_palette, horiz = T)</code></pre>
+<p><img src="rmd_Kmeans_files/figure-html/unnamed-chunk-8-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p>Conclusions:</p>
+<ul>
+<li>Expected sex-specific pattern:
+<ul>
+<li>Sxl is female, whereas msl-2 male specifc</li>
+<li>roX1 is unspecfic until it becomes male specific</li>
+<li>roX2 expression is activated later only in males</li>
+</ul></li>
+<li>Using RNA-seq expression of known sex-specific genes one can easily distinguish between female and male embryos</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="data-source" class="section level1">
+<h1>Data Source</h1>
+<p>The dataset was generated by Tamas Schauer (LMU, BMC, Becker group)</p>
+<hr />
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>Progressive dosage compensation during Drosophila embryogenesis is reflected by gene arrangement. Prayitno K, Schauer T, Regnard C, Becker PB. EMBO Rep. 2019 Aug;20(8):e48138. doi: 10.15252/embr.201948138. Epub 2019 Jul 9. PMID: 31286660</p>
+<p>TPM calculation: <a href="https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/" class="uri">https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/</a></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

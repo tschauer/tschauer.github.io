@@ -23,7 +23,8 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 
 ## RNA-seq
 
-* DESeq2
+- [Kmeans Clustering on Female/Male Embryos](rmd_Kmeans.html)
+* DESeq2?
 * under construction
 
 ---

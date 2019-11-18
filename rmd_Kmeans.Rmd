@@ -1,0 +1,269 @@
+---
+title: "K-Means Clustering - Female/Male Embryos"
+output: 
+    html_document:
+        toc: TRUE
+---
+
+
+<style>
+a {
+  font-size: 16px;
+}
+</style>
+
+
+```{r global options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, include = TRUE, warning=FALSE, message=FALSE)
+```
+
+---
+
+## Embryo RNA-seq Data
+
+* time course experiment of individual Drosophila embryos
+* the time spans up to 12 hours in development
+* during this time key sex determination genes get activated
+* goal: distinguish which embryo is female or male
+
+---
+
+### Pre-processing
+
+* alignment and count table was generated using STAR
+
+```{bash eval=F}
+# do not run here
+module load ngs/STAR/2.5.3a
+module load ngs/samtools
+
+### STAR index directory ###
+STAR_INDEX="../genome/STAR_dmel-all-chromosome-r6.17"
+
+### GTF file ###
+GTF_FILE="../genome/dmel-all-r6.17.gtf"
+
+# STAR run
+STAR \
+--runThreadN 8 \
+--readFilesCommand gunzip -c \
+--quantMode GeneCounts \
+--genomeDir ${STAR_INDEX} \
+--sjdbGTFfile ${GTF_FILE} \
+--readFilesIn ${FILEBASE}_1.txt.gz ${FILEBASE}_2.txt.gz \
+--outFileNamePrefix ${FILEBASE}. \
+--outSAMtype BAM SortedByCoordinate \
+--limitBAMsortRAM 5000000000 \
+--outFilterMultimapNmax 1
+```
+
+### Annotation
+
+* annotation is derived from the same GTF (loaded as txdb)
+
+```{r}
+library(AnnotationDbi)
+library(GenomicFeatures)
+
+txdb = loadDb("data_Kmeans/txdb")
+
+my_exons <- exons(txdb)
+
+exons.list.per.gene <- exonsBy(txdb, by="gene")
+exonic.gene.sizes <- sum(width(reduce(exons.list.per.gene))) / 1000
+
+head(exonic.gene.sizes)
+```
+
+
+### Count Table
+
+```{r}
+# read data from text file
+my_counts <- read.table("data_Kmeans/count_table.txt", header = T, row.names = 1)
+
+my_counts[1:6,1:8]
+
+dim(my_counts)
+```
+
+---
+
+### Filtering and Normalization
+
+* TPM normalization makes sure that samples and genes are comparable
+    + first normalize by exonic gene length
+    + second normalize by the sum of length corrected counts 
+
+```{r}
+# function to calculate TPM (see reference below)
+countToTpm <- function(counts, effLen, scaler=1e6)
+{
+      rate <- log(counts) - log(effLen)
+      denom <- log(sum(exp(rate)))
+      exp(rate - denom + log(scaler))
+}
+
+```
+
+
+```{r}
+# select genes
+my_counts_Genes <- my_counts[grep("FBgn", rownames(my_counts)),]
+
+# filter low counts
+my_filter <- apply(my_counts_Genes, 1, function(x) length(x[x>20]) >= ncol(my_counts_Genes)/12)
+
+my_counts_Filtered <- my_counts_Genes[my_filter,]
+
+# match filtered genes and exonic gene sizes
+my_genes_Filtered <- intersect(rownames(my_counts_Filtered), names(exonic.gene.sizes))
+
+exonic.gene.sizes <- exonic.gene.sizes[names(exonic.gene.sizes) %in% my_genes_Filtered]
+exonic.gene.sizes <- exonic.gene.sizes[order(names(exonic.gene.sizes))]
+
+my_counts_Filtered <- my_counts_Filtered[rownames(my_counts_Filtered) %in% my_genes_Filtered,]
+my_counts_Filtered <- my_counts_Filtered[order(rownames(my_counts_Filtered)),]
+
+# check whether names are identical
+stopifnot(identical(rownames(my_counts_Filtered), names(exonic.gene.sizes)))
+
+# calculate TPM
+my_TPM <- apply(my_counts_Filtered, 2, FUN = function(x){countToTpm(x, exonic.gene.sizes)})
+
+# take log
+log2_TPM <- log2(my_TPM+0.5)
+
+log2_TPM[1:6,1:6]
+
+dim(log2_TPM)
+```
+
+---
+
+# K-means Clustering
+
+### Clustering with k=3
+
+* first embryo is before sex determination is initiated
+* that´s why we set k = 3 (early, female and male)
+
+```{r}
+library(org.Dm.eg.db)
+
+# select well known sex-specific marker genes
+my_favorite_genes <- c("Sxl", "msl-2" ,"lncRNA:roX1", "lncRNA:roX2")
+names(my_favorite_genes) <- mapIds(org.Dm.eg.db, my_favorite_genes, "FLYBASE", keytype="SYMBOL", multiVals="first")
+
+set.seed(99)
+
+# k-means with k=3
+kmeans_clusters <- kmeans(apply(log2_TPM[ rownames(log2_TPM) %in% names(my_favorite_genes), ], 1, 
+                         function(x){ (x-mean(x))/sd(x) }),3, nstart=25, iter.max=1000)
+
+my_sexes <- factor(as.integer(kmeans_clusters$cluster))
+
+head(my_sexes)
+```
+
+### Plot Marker Genes
+
+* plot TPM values to see sex-specific pattern
+
+```{r echo=F}
+# helper function for plotting
+
+plotDots <- function(my_data, 
+                     my_title,
+                     color_palette,
+                     color_groups,
+                     conditions,
+                     point_size = 1.5,
+                     ylims = c(0, 15),
+                     x_label = NULL){
+      
+    par(cex.main = 1.5)
+      
+      grouped_data = data.frame(exp = as.numeric(my_data),
+                                group =  as.numeric(conditions))
+      
+      plot(grouped_data$group + runif(length(grouped_data$group), -0.05, 0.05),
+           grouped_data$exp,
+           pch=19, cex = point_size, ylim =  ylims,
+           xaxt = "n", xlab = "", ylab = "",
+           main= my_title, col =  color_palette[color_groups])
+      
+      if(!(is.null(x_label))){
+            axis(side = 1, at = seq_along(unique(grouped_data$group)), labels = x_label)
+            
+      } else {
+            axis(side = 1, labels = FALSE)
+            
+      }
+     
+}
+```
+
+
+```{r fig.align="center", fig.height=4, fig.width=10}
+# conditions
+my_conditions <- factor(substr(colnames(log2_TPM),1,2))
+
+# setup color
+my_color_palette <- c("#999999", "#d6604d", "#4393c3")
+
+par(mfrow=c(1,4), oma=c(4,2,0,2))
+
+# iterate through marker genes
+for(i in seq_along(my_favorite_genes)){
+    
+    plotDots(log2_TPM[rownames(log2_TPM) == names(my_favorite_genes)[i],], 
+                     my_title = my_favorite_genes[i], 
+                     color_palette = my_color_palette, 
+                     color_groups = my_sexes, 
+                     conditions = my_conditions, 
+                     point_size = 0.8)
+}
+
+mtext(text = "Stages", side = 1, line = -2, outer = TRUE)
+mtext(text = "log2 TPM", side = 2, outer = TRUE)
+
+par(fig = c(0,1,0,1), mar=c(0,0,0,0), new = TRUE)
+plot(0,0, xlab="", ylab="", xaxt="n", yaxt="n", bty="n", type="n" )
+legend("bottomright", legend = c("Early", "Female", "Male"), pch = 19, col = my_color_palette, horiz = T)
+
+```
+
+
+
+
+
+
+Conclusions:
+
+* Expected sex-specific pattern:
+    + Sxl is female, whereas msl-2 male specifc
+    + roX1 is unspecfic until it becomes male specific
+    + roX2 expression is activated later only in males
+*  Using RNA-seq expression of known sex-specific genes one can easily distinguish between female and male embryos
+
+---
+
+# Data Source
+
+The  dataset was generated by Tamas Schauer (LMU, BMC, Becker group)
+
+
+---
+
+
+# References
+
+Progressive dosage compensation during Drosophila embryogenesis is reflected by gene arrangement.
+Prayitno K, Schauer T, Regnard C, Becker PB.
+EMBO Rep. 2019 Aug;20(8):e48138. doi: 10.15252/embr.201948138. Epub 2019 Jul 9.
+PMID: 31286660
+
+TPM calculation:
+https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
+
