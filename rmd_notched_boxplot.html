@@ -12,7 +12,7 @@
 
 
 
-<title>Data Binning and Correlation</title>
+<title>Notched Boxplots</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -290,13 +290,15 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Data Binning and Correlation</h1>
+<h1 class="title toc-ignore">Notched Boxplots</h1>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#simulation">Simulation</a></li>
+<li><a href="#groups-comparison-example">3-groups Comparison Example</a></li>
+<li><a href="#groups-simulation">3-groups Simulation</a></li>
+<li><a href="#many-groups-simulation">Many Groups Simulation</a></li>
 </ul>
 </div>
 
@@ -315,14 +317,14 @@ a {
 <hr />
 <ul>
 <li>Aim: demonstrate advantages and disadvantages of notched bloxplots</li>
-<li>?boxplot help page: if notch is TRUE, a notch is drawn in each side of the boxes. If the notches of two plots do not overlap this is ‘strong evidence’ that the two medians differ (Chambers et al, 1983, p. 62)</li>
-<li>The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.</li>
+<li>boxplot help page: “if notch is TRUE, a notch is drawn in each side of the boxes. If the notches of two plots do not overlap this is ‘strong evidence’ that the two medians differ (Chambers et al, 1983, p. 62)”</li>
+<li>“The notches (if requested) extend to +/-1.58 IQR/sqrt(n). This seems to be based on the same calculations as the formula with 1.57 in Chambers et al (1983, p. 62), given in McGill et al (1978, p. 16). They are based on asymptotic normality of the median and roughly equal sample sizes for the two medians being compared, and are said to be rather insensitive to the underlying distributions of the samples. The idea appears to be to give roughly a 95% confidence interval for the difference in two medians.”</li>
 </ul>
 <hr />
-<div id="simulation" class="section level3">
-<h3>Simulation</h3>
+<div id="groups-comparison-example" class="section level3">
+<h3>3-groups Comparison Example</h3>
 <ul>
-<li>3 group comparison (x,y,z)</li>
+<li>3 variables (x,y,z)</li>
 <li>normal distribution</li>
 <li>different means and same standard deviation</li>
 <li>investigate effect of n</li>
@@ -354,9 +356,18 @@ for(i in seq_along(ns)){
             notch = TRUE, ylim = c(-1,1),
             main = paste(&quot;n =&quot;, n))
     
+    rect(xleft = 0, ybottom = median(x)-IQR(x, type = 2)*1.58/sqrt(n), 
+         xright = 4, ytop =   median(x)+IQR(x, type = 2)*1.58/sqrt(n), 
+         border = NA, col = &quot;#00000033&quot;)
+    
     rect(xleft = 0, ybottom = median(y)-IQR(y, type = 2)*1.58/sqrt(n), 
-         xright = 4, ytop = median(y)+IQR(y, type = 2)*1.58/sqrt(n), 
-         border = NA, col = &quot;#00000066&quot;)
+         xright = 4, ytop =   median(y)+IQR(y, type = 2)*1.58/sqrt(n), 
+         border = NA, col = &quot;#00000033&quot;)
+    
+    
+    rect(xleft = 0, ybottom = median(z)-IQR(z, type = 2)*1.58/sqrt(n), 
+         xright = 4, ytop =   median(z)+IQR(z, type = 2)*1.58/sqrt(n), 
+         border = NA, col = &quot;#00000033&quot;)
     
     # fit anova
     fit &lt;- aov(outcome ~ group, data = dat)
@@ -378,12 +389,123 @@ for(i in seq_along(ns)){
 }</code></pre>
 <p><img src="rmd_notched_boxplot_files/figure-html/unnamed-chunk-1-1.png" width="768" style="display: block; margin: auto;" /></p>
 <ul>
-<li>as expected for a 95% CI the notches decrease with increased n</li>
-<li>the overlap seems to be quite conservative indicator</li>
-<li>Tukey test gives clearly signifcant result (n=40, X-Z) but notches overlap</li>
+<li>as expected notch intervals decrease with increased n</li>
+<li>n = 10, X-Y and X-Z notches overlap and only Y-Z is significant (notches do not overlap)</li>
+<li>n = 40, X-Y and X-Z notches overlap and Y-Z as well as X-Y is significant</li>
+<li>n = 90, none of the notches overlap but X-Z is not significant</li>
+<li>notch overlap is not always consistent with Tukey test</li>
 </ul>
 <hr />
-<p>… to be continued …</p>
+</div>
+<div id="groups-simulation" class="section level3">
+<h3>3-groups Simulation</h3>
+<ul>
+<li>3 groups, show only X-Y comparison</li>
+</ul>
+<pre class="r"><code>n = 40
+
+n_overlap1 &lt;- replicate(1000, expr = {
+    
+    x &lt;- rnorm(n, 0)
+    y &lt;- rnorm(n, 0.55)
+    # no need for z (notches are constructed independently)
+    
+    x_upr &lt;- median(x)+IQR(x, type = 2)*1.58/sqrt(n)
+    x_lwr &lt;- median(x)-IQR(x, type = 2)*1.58/sqrt(n)
+    y_upr &lt;- median(y)+IQR(y, type = 2)*1.58/sqrt(n)
+    y_lwr &lt;- median(y)-IQR(y, type = 2)*1.58/sqrt(n)
+    
+    !(x_lwr &gt; y_upr | x_upr &lt; y_lwr)
+    
+})
+
+
+n_overlap2 &lt;- replicate(1000, expr = {
+    
+    x &lt;- rnorm(n, 0)
+    y &lt;- rnorm(n, 0.55)
+    z &lt;- rnorm(n, -0.25)
+    
+    dat &lt;- data.frame(outcome = c(x,y,z),
+                      group = rep(c(&quot;X&quot;,&quot;Y&quot;,&quot;Z&quot;), each = n))
+    
+    fit &lt;- aov(outcome ~ group, data = dat)
+    tukey_results &lt;- TukeyHSD(fit, ordered = FALSE)$group
+    
+    tukey_results[&quot;Y-X&quot;,2] &lt; 0  &amp; tukey_results[&quot;Y-X&quot;,3] &gt; 0
+})
+
+
+mean(n_overlap1); mean(n_overlap2)</code></pre>
+<pre><code>## [1] 0.66</code></pre>
+<pre><code>## [1] 0.468</code></pre>
+<ul>
+<li>it is more frequent that the notch intervals overlap than the Tukey intervals overlap 0</li>
+<li>in such setup we would find more often significant results using Tukey test</li>
+</ul>
+<hr />
+</div>
+<div id="many-groups-simulation" class="section level3">
+<h3>Many Groups Simulation</h3>
+<ul>
+<li>few additional Zs</li>
+</ul>
+<pre class="r"><code>n = 40
+
+n_overlap1 &lt;- replicate(1000, expr = {
+    
+    x &lt;- rnorm(n, 0)
+    y &lt;- rnorm(n, 0.55)
+    # no need for z (notches are constructed independently)
+    
+    x_upr &lt;- median(x)+IQR(x, type = 2)*1.58/sqrt(n)
+    x_lwr &lt;- median(x)-IQR(x, type = 2)*1.58/sqrt(n)
+    y_upr &lt;- median(y)+IQR(y, type = 2)*1.58/sqrt(n)
+    y_lwr &lt;- median(y)-IQR(y, type = 2)*1.58/sqrt(n)
+    
+    !(x_lwr &gt; y_upr | x_upr &lt; y_lwr)
+})
+
+
+
+n_overlap2 &lt;- replicate(1000, expr = {
+    
+    x &lt;- rnorm(n, 0)
+    y &lt;- rnorm(n, 0.55)
+    z1 &lt;- rnorm(n, -0.25)
+    # add manually some Zs
+    z2 &lt;- rnorm(n, -0.25)
+    z3 &lt;- rnorm(n, -0.25)
+    z4 &lt;- rnorm(n, -0.25)
+    z5 &lt;- rnorm(n, -0.25)
+    z6 &lt;- rnorm(n, -0.25)
+    z7 &lt;- rnorm(n, -0.25)
+    z8 &lt;- rnorm(n, -0.25)
+    
+    dat &lt;- data.frame(outcome = c(x,y,z1,z2,z3,z4,z5,z6,z7,z8),
+                      group = rep(c(&quot;X&quot;,&quot;Y&quot;,&quot;Z1&quot;,&quot;Z2&quot;,&quot;Z3&quot;,&quot;Z4&quot;,&quot;Z5&quot;,&quot;Z6&quot;,&quot;Z7&quot;,&quot;Z8&quot;), each = n))
+    
+    fit &lt;- aov(outcome ~ group, data = dat)
+    tukey_results &lt;- TukeyHSD(fit, ordered = FALSE)$group
+    
+    tukey_results[&quot;Y-X&quot;,2] &lt; 0  &amp; tukey_results[&quot;Y-X&quot;,3] &gt; 0
+})
+
+
+mean(n_overlap1); mean(n_overlap2)</code></pre>
+<pre><code>## [1] 0.661</code></pre>
+<pre><code>## [1] 0.751</code></pre>
+<ul>
+<li>constructing the notch intervals does not take into account the number of groups/comparisons</li>
+<li>by adding more groups Tukey intervals more frequently include 0 (not significant)</li>
+</ul>
+<hr />
+<p>Conclusions:</p>
+<ul>
+<li>notch intervals are conservative when having a few groups only</li>
+<li>they are not corrected for multiple tests, so with many groups it becomes anti-conservative</li>
+<li>due this behavior notched boxplot can only be used as a quick exploratory tool</li>
+</ul>
 </div>
 
 
